@@ -1,4 +1,4 @@
-function [experiment_info,current_sample,kernel]=MAED_incremental(data,labels,numSample,batch_size,options)
+function [experiment_info,current_sample,current_labels,kernel]=MAED_incremental(data,labels,numSample,batch_size,options)
 % MAED_incremental: Incremental Manifold Adaptive Experimental Design
 %     sampleList = MAED(fea,selectNum,options)
 % Input:
@@ -15,7 +15,7 @@ function [experiment_info,current_sample,kernel]=MAED_incremental(data,labels,nu
 %                         results obtained after observing 50 and 100 points
 %                         respectively.
 %   test_data          -  if one wants to retain only the best model
-%                         encountered during the incremental learnin, a
+%                         encountered during the incremental learning, a
 %                         test data structure of the following format
 %                         should be added:
 %                          test_data.data
@@ -32,7 +32,7 @@ function [experiment_info,current_sample,kernel]=MAED_incremental(data,labels,nu
 %                                 If 'W' is provided, this parameter will be
 %                                 ignored.
 %
-%   ReguBeta    -  regularization paramter for manifold
+%   ReguBeta    -  regularization parameter for manifold
 %                                 adaptive kernel.
 %
 %   ReguAlpha   -  ridge regularization paramter. Default 0.01
@@ -48,10 +48,11 @@ experiment_info={};
 starting_count=tic;
 %shuffle data
 ix=randperm(size(data,1));
-[current_sample,current_labels,current_D,kernel]=initialize_sample(options,data(ix,:),labels(ix,:),numSample);
+data=data(ix,:);
+labels=labels(ix,:);
+[current_sample,current_labels,current_D,kernel]=initialize_sample(options,data,labels,numSample);
 
 point=1;
-
 %check if we record experiment info at observation points kept in option.
 %If yes, real model observation points in options and save this current
 %model as the starting point
@@ -119,6 +120,16 @@ end
     end
 
     function [Dist,K,updated_sample,updated_class] = MAED_rank_incremental(original_sample,original_sample_class,new_data_point,new_data_point_class,indices_to_remove,D,selectNum,options)
+        %Reference:
+        %
+        %   [1] Deng Cai and Xiaofei He, "Manifold Adaptive Experimental Design for
+        %   Text Categorization", IEEE Transactions on Knowledge and Data
+        %   Engineering, vol. 24, no. 4, pp. 707-719, 2012.
+        %
+        %   version 2.0 --Jan/2012
+        %   version 1.0 --Aug/2008
+        %
+        %   Written by Deng Cai (dengcai AT gmail.com)
         nSmp = size(original_sample,1);
         splitLabel = false(nSmp,1);
         if isfield(options,'splitLabel')
@@ -161,7 +172,6 @@ end
             end
             D = full(sum(W,2));
             L = spdiags(D,0,nSmp,nSmp)-W;
-            
             K=(speye(size(K,1))+options.ReguBeta*K*L)\K;
             K = max(K,K');
         end
@@ -169,13 +179,10 @@ end
         if ~isfield(options,'Method')
             options.Method = 'Seq';
         end
-        
         ReguAlpha = 0.01;
         if isfield(options,'ReguAlpha')
             ReguAlpha = options.ReguAlpha;
         end
-        
-        
         switch lower(options.Method)
             case {lower('Seq')}
                 [sampleList,values] = MAEDseq(K,selectNum,splitLabel,ReguAlpha);
