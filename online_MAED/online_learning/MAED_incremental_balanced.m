@@ -1,4 +1,4 @@
-function [experiment_info,current_sample,current_labels,kernel]=MAED_incremental(data,labels,numSample,batch_size,options)
+function [experiment_info,current_sample,current_labels,kernel]=MAED_incremental_balanced(data,labels,numSample,batch_size,options)
 % MAED_incremental: Incremental Manifold Adaptive Experimental Design
 %     sampleList = MAED(fea,selectNum,options)
 % Input:
@@ -17,6 +17,7 @@ function [experiment_info,current_sample,current_labels,kernel]=MAED_incremental
 %   plot_label_distr- flag and output path to a plot that collects label distribution during the online
 %                         learning, and plot the trend at the end of the learning.
 %                          if observation_points is set, the distribution will be recorded in the
+%                          experiment_info output variable
 %   test_data          -  if one wants to retain only the best model
 %                         encountered during the incremental learning, a
 %                         test data structure of the following format
@@ -87,8 +88,8 @@ for j=0:batch_size:(size(data,1)-numSample-batch_size)
     old_labels=current_labels;
     old_kernel=kernel;
     
-    indices_to_remove=[];
-    [current_D,kernel,current_sample,current_labels] = MAED_rank_incremental(current_sample,current_labels,new_points,new_classes,indices_to_remove,current_D,numSample,options);
+    %[current_D,kernel,current_sample,current_labels] = MAED_rank_incremental(current_sample,current_labels,new_points,new_classes,indices_to_remove,current_D,numSample,options);
+    [kernel,current_sample,current_labels] =update_model_balanced(current_sample,current_labels,new_points,new_classes,numSample,options);
     %if specified, keep the current model only if it improves the performance from the
     %previous model
     if isfield(options,'test_data')
@@ -143,7 +144,49 @@ end
         labels=train_fea_class_incremental;
     end
 
-    function [Dist,K,updated_sample,updated_class] = MAED_rank_incremental(original_sample,original_sample_class,new_data_point,new_data_point_class,indices_to_remove,D,selectNum,options)
+
+    function [kernel,current_sample,current_labels]=update_model_balanced(train_fea_incremental,train_fea_class_incremental,new_points,new_classes,numSample,options)
+        %we assume that it's always binary problem, hence we split the data into
+        %two classes
+        %concatenate current points with new points
+        train_fea_incremental=[train_fea_incremental;new_points];
+        train_fea_class_incremental=[train_fea_class_incremental;new_classes];
+        classes=unique(train_fea_class_incremental);
+        %determine how many samples to select from each class
+        nr_samples1=ceil(numSample/2);
+        nr_samples2=numSample-nr_samples1;
+        
+        ix_up_class1=find(train_fea_class_incremental==classes(1));
+        ix_up_class2=find(train_fea_class_incremental==classes(2));
+        
+        data_sub1=train_fea_incremental(ix_up_class1,:);
+        data_sub2=train_fea_incremental(ix_up_class2,:);
+        labels_sub1=train_fea_class_incremental(ix_up_class1,:);
+        labels_sub2=train_fea_class_incremental(ix_up_class2,:);
+        if size(data_sub1,1)<nr_samples1
+            %take all samples of class 1
+            %choose the top the rest of the class 2
+            r1=(1:size(data_sub1,1))';
+            [r2,~] = MAED_batch_ranking(data_sub2,labels_sub2,numSample-size(data_sub1,1),options);
+            
+        elseif size(data_sub2,1)<nr_samples2
+            %take all samples of class 2
+            %choose the top the rest of the class 1
+            r2=(1:size(data_sub2,1));
+            [r1,~] = MAED_batch_ranking(data_sub2,labels_sub2,numSample-size(data_sub2,1),options);
+            
+        else
+            [r1,~] = MAED_batch_ranking(data_sub1,labels_sub1,nr_samples1,options);
+            [r2,~] = MAED_batch_ranking(data_sub2,labels_sub2,nr_samples2,options);
+        end
+        
+        
+        current_sample=[data_sub1(r1,:);data_sub2(r2,:)];
+        current_labels=[labels_sub1(r1,:);labels_sub2(r2,:)];
+        [~,kernel] = MAED_batch_ranking(current_sample,current_labels,numSample,options);
+    end
+
+    function [sampleList,K] = MAED_batch_ranking(fea,labels,selectNum,options)
         %Reference:
         %
         %   [1] Deng Cai and Xiaofei He, "Manifold Adaptive Experimental Design for
@@ -154,45 +197,35 @@ end
         %   version 1.0 --Aug/2008
         %
         %   Written by Deng Cai (dengcai AT gmail.com)
-        nSmp = size(original_sample,1);
+        nSmp = size(fea,1);
         splitLabel = false(nSmp,1);
         if isfield(options,'splitLabel')
             splitLabel = options.splitLabel;
         end
-        %I changed here
-        %fprintf('Current size of D is %d',size(D,1))
-        if isempty(indices_to_remove)
-            Dist = EuDist2([original_sample;new_data_point],[],0);
-            updated_sample=[original_sample;new_data_point];
-            updated_class=[original_sample_class;new_data_point_class];
-            nSmp=size(updated_sample,1);
-        elseif isempty(new_data_point)
-            Dist = EuDist2(original_sample,[],0);
-            updated_sample=original_sample;
-            updated_class=original_sample_class;
-            nSmp=size(updated_sample,1);
-        else
-            [Dist,updated_sample,updated_class]=EuDist2_incremental(original_sample,original_sample_class,D,indices_to_remove,new_data_point,new_data_point_class,0);
-            nSmp=size(updated_sample,1);
+        
+        [K,Dist,options] = constructKernel(fea,[],options);
+        if isfield(options,'warping') && options.warping
+            options.gnd=labels;
         end
-        K = constructKernel_incremental(Dist,options);
         if isfield(options,'ReguBeta') && options.ReguBeta > 0
-            
             if isfield(options,'W')
                 W = options.W;
             else
                 if isfield(options,'k')
                     Woptions.k = options.k;
                 else
-                    Woptions.k = 0;
+                    Woptions.k = 5;
                 end
                 
-                Woptions.bLDA=options.bLDA;
-                Woptions.t = options.t;
-                Woptions.NeighborMode = options.NeighborMode ;
-                Woptions.gnd = updated_class ;
-                Woptions.WeightMode = options.WeightMode  ;
-                W = constructW(updated_sample,Woptions);
+                tmpD = Dist;
+                Woptions.t = mean(mean(tmpD));
+                if isfield(options,'gnd')
+                    Woptions.WeightMode = 'HeatKernel';
+                    Woptions.NeighborMode='Supervised';
+                    Woptions.bLDA=options.bLDA;
+                    Woptions.gnd=options.gnd;
+                end
+                W = constructW(fea,Woptions);
             end
             D = full(sum(W,2));
             L = spdiags(D,0,nSmp,nSmp)-W;
@@ -209,14 +242,7 @@ end
         end
         switch lower(options.Method)
             case {lower('Seq')}
-                [sampleList,values] = MAEDseq(K,selectNum,splitLabel,ReguAlpha);
-                if isempty(indices_to_remove)
-                    updated_sample=updated_sample(sampleList,:);
-                    updated_class=updated_class(sampleList,:);
-                    Dist=Dist(sampleList,sampleList);
-                    K=K(sampleList,sampleList);
-                end
-                
+                [sampleList,~] = MAEDseq(K,selectNum,splitLabel,ReguAlpha);
             otherwise
                 error('Optimization method does not exist!');
         end

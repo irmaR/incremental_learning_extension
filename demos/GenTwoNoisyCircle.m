@@ -1,5 +1,5 @@
 
-function [fea, gnd] = GenTwoNoisyCircle(N,perc1,perc2)
+function [fea, gnd] = GenTwoNoisyCircle(N,perc1)
 %   [fea, gnd] = GenTwoNoisyCircle(N)
 %
 %   version 2.0 --Jan/2012

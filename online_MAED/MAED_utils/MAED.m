@@ -1,4 +1,4 @@
-function [sampleList,values,Dist,K] = MAED(fea,labels,selectNum,options,data_limit,warping)
+function [sampleList,values,Dist,K] = MAED(fea,labels,selectNum,options)
 % MAED: Manifold Adaptive Experimental Design  
 %
 %     sampleList = MAED(fea,selectNum,options)
@@ -65,7 +65,7 @@ end
 
 
 [K,Dist,options] = constructKernel(fea,[],options);
-if warping
+if isfield(options,'warping')
   options.gnd=labels;
 end
 

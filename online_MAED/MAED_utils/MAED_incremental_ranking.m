@@ -1,4 +1,4 @@
-function [sampleList,values,Dist,K,updated_sample,updated_class] = MAED_incremental(original_sample,original_sample_class,new_data_point,new_data_point_class,indices_to_remove,D,selectNum,options,warping)
+function [sampleList,values,Dist,K,updated_sample,updated_class] = MAED_incremental_ranking(original_sample,original_sample_class,new_data_point,new_data_point_class,indices_to_remove,D,selectNum,options,warping)
 % MAED: Manifold Adaptive Experimental Design  
 %
 %     sampleList = MAED(fea,selectNum,options)

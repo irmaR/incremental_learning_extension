@@ -14,6 +14,7 @@ function [experiment_info,current_sample,current_labels,kernel]=MAED_batch(data,
 %                         example, model_observation_points=[50,100] will record
 %                         results obtained after observing 50 and 100 points
 %                         respectively.
+%   plot_label_distr   - plot label distribution during the online learning
 %   test_data          -  if one wants to retain only the best model
 %                         encountered during the incremental learning, a
 %                         test data structure of the following format
@@ -138,26 +139,30 @@ end
         ix_up_class1=find(train_fea_class_incremental==classes(1));
         ix_up_class2=find(train_fea_class_incremental==classes(2));
         
-        [r1,~] = MAED_batch_ranking(train_fea_incremental,train_fea_class_incremental,numSample,options);
-        updated_class=train_fea_class_incremental(r,:);
-        updated_sample=train_fea_incremental(r,:);
-        ix_up_class1=find(updated_class==classes(1));
-        ix_up_class2=find(updated_class==classes(2));
-        if nr_samples1>size(ix_up_class1,1)
-            nr_samples1=size(ix_up_class1,1);
-            nr_samples2=numSample-nr_samples1;
-        end
-        if nr_samples2>size(ix_up_class2,1)
-            nr_samples2=size(ix_up_class2,1);
-            nr_samples1=numSample-nr_samples2;
-        end
-        nr_samples1
-        nr_samples2
-        current_sample=[updated_sample(ix_up_class1(1:nr_samples1),:);updated_sample(ix_up_class2(1:nr_samples2),:)];
-        current_labels=[updated_class(ix_up_class1(1:nr_samples1),:);updated_class(ix_up_class2(1:nr_samples2),:)];
-        size(find(current_labels==classes(1)))
-        size(find(current_labels==classes(2)))
-        [r,kernel] = MAED_batch_ranking(current_sample,current_labels,numSample,options);
+        data_sub1=train_fea_incremental(ix_up_class1,:);
+        data_sub2=train_fea_incremental(ix_up_class2,:);
+        labels_sub1=train_fea_class_incremental(ix_up_class1,:);
+        labels_sub2=train_fea_class_incremental(ix_up_class2,:);
+        if size(data_sub1,1)<nr_samples1
+            %take all samples of class 1
+            %choose the top the rest of the class 2
+            r1=(1:size(data_sub1,1))';
+            [r2,~] = MAED_batch_ranking(data_sub2,labels_sub2,numSample-size(data_sub1,1),options);
+            
+        elseif size(data_sub2,1)<nr_samples2
+            %take all samples of class 2
+            %choose the top the rest of the class 1
+            r2=(1:size(data_sub2,1));
+            [r1,~] = MAED_batch_ranking(data_sub2,labels_sub2,numSample-size(data_sub2,1),options);
+            
+        else
+            [r1,~] = MAED_batch_ranking(data_sub1,labels_sub1,nr_samples1,options);        
+            [r2,~] = MAED_batch_ranking(data_sub2,labels_sub2,nr_samples2,options);
+        end    
+        current_sample=[data_sub1(r1,:);data_sub2(r2,:)];
+        current_labels=[labels_sub1(r1,:);labels_sub2(r2,:)];
+        [~,kernel] = MAED_batch_ranking(current_sample,current_labels,numSample,options);
+        
     end
 
 
@@ -225,150 +230,3 @@ end
     end
 end
 
-% function [current_sample,current_labels,ranking,kernel,current_D]=update_model_random(options,nr_samples,ranking,values,train_fea_incremental,train_fea_class_incremental,new_points,new_classes,current_D,data_limit,warping)
-% ix=randperm(size(train_fea_incremental,1));
-% train_fea_incremental=train_fea_incremental(ix(1:nr_samples),:);
-% train_fea_class_incremental=train_fea_class_incremental(ix(1:nr_samples),:);
-% [ranking,values,current_D,kernel] = MAED(train_fea_incremental,train_fea_class_incremental,nr_samples,options,data_limit,warping);
-% %fprintf('Current kernel size: %d-%d',size(kernel,1),size(kernel,2))
-% current_sample=train_fea_incremental(ranking,:);
-% current_labels=train_fea_class_incremental(ranking,:);
-% kernel=kernel(ranking,ranking);
-% current_D=current_D(ranking,ranking);
-% %[ranking,values,current_D,kernel]=MAED(current_sample,current_labels,nr_samples,options,data_limit,warping);
-% end
-
-% function [current_sample,current_labels,ranking,kernel,current_D]=update_model_random_balanced(options,nr_samples,ranking,values,train_fea_incremental,train_fea_class_incremental,new_points,new_classes,current_D,data_limit,warping)
-% ix=randperm(size(train_fea_incremental,1));
-% train_fea_incremental=train_fea_incremental(ix,:);
-% train_fea_class_incremental=train_fea_class_incremental(ix,:);
-% classes=unique(train_fea_class_incremental);
-% ix1=find(train_fea_class_incremental==classes(1));
-% ix2=find(train_fea_class_incremental==classes(2));
-%
-% nr_samples1=ceil(nr_samples/2);
-% nr_samples2=nr_samples-nr_samples1;
-% if nr_samples1>size(ix1,1)
-%     nr_samples1=size(ix1,1);
-%     nr_samples2=nr_samples-nr_samples1;
-% end
-%
-% if nr_samples2>size(ix2,1)
-%     nr_samples2=size(ix2,1);
-%     nr_samples1=nr_samples-nr_samples2;
-% end
-%
-% train_fea_incremental=[train_fea_incremental(ix1(1:nr_samples1),:);train_fea_incremental(ix2(1:nr_samples2),:)];
-% train_fea_class_incremental=[train_fea_class_incremental(ix1(1:nr_samples1),:);train_fea_class_incremental(ix2(1:nr_samples2),:)];
-% [ranking,values,current_D,kernel] = MAED(train_fea_incremental,train_fea_class_incremental,nr_samples,options,data_limit,warping);
-% %fprintf('Current kernel size: %d-%d',size(kernel,1),size(kernel,2))
-% current_sample=train_fea_incremental(ranking,:);
-% current_labels=train_fea_class_incremental(ranking,:);
-% %kernel=kernel(ranking,ranking);
-% %current_D=current_D(ranking,ranking);
-% [ranking,values,current_D,kernel]=MAED(current_sample,current_labels,nr_samples,options,data_limit,warping);
-% end
-
-
-% function [current_sample,current_labels,ranking,kernel,current_D]=update_model_balance(options,nr_samples,ranking,values,train_fea_incremental,train_fea_class_incremental,new_points,new_classes,current_D,data_limit,warping,batch)
-% if size(new_points,1)==0
-%     if size(train_fea_incremental,1)>=data_limit
-%         ix=randperm(size(train_fea_incremental,1));
-%         train_fea_incremental=train_fea_incremental(ix(1:data_limit),:);
-%         train_fea_class_incremental=train_fea_class_incremental(ix(1:data_limit),:);
-%     end
-%     %we assume that it's always binary problem, hence we split the data into
-%     %two classes
-%     classes=unique(train_fea_class_incremental);
-%     ix1=find(train_fea_class_incremental==classes(1));
-%     ix2=find(train_fea_class_incremental==classes(2));
-%
-%
-%     %determine how many samples to select from each class
-%     nr_samples1=ceil(nr_samples/2);
-%     nr_samples2=nr_samples-nr_samples1;
-%
-%
-%
-%     train_1=train_fea_incremental(ix1,:);
-%     train_2=train_fea_incremental(ix2,:);
-%     class_1=train_fea_class_incremental(ix1,:);
-%     class_2=train_fea_class_incremental(ix2,:);
-%
-%     [ranking,values,current_D,kernel] = MAED(train_fea_incremental,train_fea_class_incremental,nr_samples,options,data_limit,warping);
-%     updated_class=train_fea_class_incremental(ranking,:);
-%     updated_sample=train_fea_incremental(ranking,:);
-%     ix_up_class1=find(updated_class==classes(1));
-%     ix_up_class2=find(updated_class==classes(2));
-%
-%     if nr_samples1>size(ix_up_class1,1)
-%         nr_samples1=size(ix_up_class1,1);
-%         nr_samples2=nr_samples-nr_samples1;
-%     end
-%
-%     if nr_samples2>size(ix_up_class2,1)
-%         nr_samples2=size(ix_up_class2,1);
-%         nr_samples1=nr_samples-nr_samples2;
-%     end
-%
-%     current_sample=[updated_sample(ix_up_class1(1:nr_samples1),:);updated_sample(ix_up_class2(1:nr_samples2),:)];
-%     current_labels=[updated_class(ix_up_class1(1:nr_samples1),:);updated_class(ix_up_class2(1:nr_samples2),:)];
-%     [ranking,values,current_D,kernel]=MAED(current_sample,current_labels,nr_samples,options,data_limit,warping);
-% else
-%     if batch<=nr_samples
-%         selected_samples=train_fea_incremental(ranking,:);
-%         indices_to_remove=ranking((size(selected_samples,1)+1)-size(new_points,1):end,:);
-%         selected_labels=train_fea_class_incremental(ranking,:);
-%         samples_updated=selected_samples(1:size(selected_samples,1)-size(new_points,1),:);
-%     else
-%         indices_to_remove=[];
-%         selected_samples=train_fea_incremental;
-%         selected_labels=train_fea_class_incremental;
-%         samples_updated=selected_samples;
-%     end
-%     classes=unique(train_fea_class_incremental);
-%     %     try
-%     %     ix1=find(train_fea_class_incremental==classes(1));
-%     %     catch
-%     %         ix1=[];
-%     %     end
-%     %     try
-%     %     ix2=find(train_fea_class_incremental==classes(2));
-%     %     catch
-%     %         ix2=[];
-%     %     end
-%     %determine how many samples to select from each class
-%     nr_samples1=ceil(nr_samples/2);
-%     nr_samples2=nr_samples-nr_samples1;
-%     indices_to_remove=[];
-%     [ranking,values,current_D,kernel,updated_sample,updated_class] = MAED_incremental(train_fea_incremental,train_fea_class_incremental,new_points,new_classes,indices_to_remove,current_D,size(train_fea_incremental,1)+size(new_points,1),options,warping);
-%
-%     try
-%         ix_up_class1=find(updated_class==classes(1));
-%     catch
-%         ix_up_class1=[];
-%     end
-%     try
-%         ix_up_class2=find(updated_class==classes(2));
-%     catch
-%         ix_up_class2=[];
-%     end
-%     if nr_samples1>size(ix_up_class1,1)
-%         nr_samples1=size(ix_up_class1,1);
-%         nr_samples2=nr_samples-nr_samples1;
-%     end
-%
-%     if nr_samples2>size(ix_up_class2,1)
-%         nr_samples2=size(ix_up_class2,1);
-%         nr_samples1=nr_samples-nr_samples2;
-%     end
-%
-%     current_sample=[updated_sample(ix_up_class1(1:nr_samples1),:);updated_sample(ix_up_class2(1:nr_samples2),:)];
-%     current_labels=[updated_class(ix_up_class1(1:nr_samples1),:);updated_class(ix_up_class2(1:nr_samples2),:)];
-%     [ranking,values,current_D,kernel]=MAED(current_sample,current_labels,nr_samples,options,data_limit,warping);
-%
-%     %[ranking,values,current_D,kernel,current_sample,current_labels] = MAED_incremental_1(train_fea_incremental,train_fea_class_incremental,new_points,new_classes,current_D,nr_samples,options);
-% end
-% end
-%
-%

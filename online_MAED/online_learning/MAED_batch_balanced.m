@@ -14,6 +14,10 @@ function [experiment_info,current_sample,current_labels,kernel]=MAED_batch(data,
 %                         example, model_observation_points=[50,100] will record
 %                         results obtained after observing 50 and 100 points
 %                         respectively.
+%   plot_label_distr- collect label distribution during the online
+%                         learning, and plot the trend at the end of the learning.
+%                          if observation_points is set, the distribution will be recorded in the
+%                          experiment_info output variable
 %   test_data          -  if one wants to retain only the best model
 %                         encountered during the incremental learning, a
 %                         test data structure of the following format
@@ -65,9 +69,22 @@ if isfield(options,'model_observation_points')
     if isfield(options,'test_data')
         current_area=run_inference(kernel,sample,labels,options.test_data.data,options.test_data.labels,options);
     end
+    if isfield(options,'plot_label_distr')
+        [a,b]=hist(current_labels,unique(current_labels));
+        c=[b,a'];
+        experiment_info.lists_of_label_distributions{point}=c;
+    end
     experiment_info.lists_of_areas{point}=current_area;
     point=point+1;
+else
+    if isfield(options,'plot_label_distr')
+        [a,b]=hist(current_labels,unique(current_labels));
+        c=[b,a'];
+        experiment_info.lists_of_label_distributions{point}=c;
+    end
 end
+
+
 
 point=point+1;
 %start the incremental loop
@@ -115,7 +132,19 @@ for j=0:batch_size:(size(data,1)-numSample-batch_size)
         if point<=length(model_observation_points) && options.model_size+j>=model_observation_points(point)
             point=point+1;
         end
+    else
+        if isfield(options,'plot_label_distr')
+            [a,b]=hist(current_labels,unique(current_labels));
+            c=[b,a'];
+            experiment_info.lists_of_label_distributions{point}=c;
+            point=point+1;
+        end
     end
+end
+
+%plot label distribution if specified
+if isfield(options,'plot_label_distr')
+    plot_label_distributions(experiment_info.lists_of_label_distributions,options.plot_label_distr);
 end
 
     function [sample,labels,ranking,kernel]=initialize_sample(options,data,labels,model_size)
@@ -130,7 +159,7 @@ end
     function [current_sample,current_labels,kernel]=update_model_balanced(train_fea_incremental,train_fea_class_incremental,numSample,options)
         %we assume that it's always binary problem, hence we split the data into
         %two classes
-        classes=unique(train_fea_class_incremental);        
+        classes=unique(train_fea_class_incremental);
         %determine how many samples to select from each class
         nr_samples1=ceil(numSample/2);
         nr_samples2=numSample-nr_samples1;
@@ -142,8 +171,22 @@ end
         data_sub2=train_fea_incremental(ix_up_class2,:);
         labels_sub1=train_fea_class_incremental(ix_up_class1,:);
         labels_sub2=train_fea_class_incremental(ix_up_class2,:);
-        [r1,~] = MAED_batch_ranking(data_sub1,labels_sub1,nr_samples1,options);        
-        [r2,~] = MAED_batch_ranking(data_sub2,labels_sub2,nr_samples2,options);
+        if size(data_sub1,1)<nr_samples1
+            %take all samples of class 1
+            %choose the top the rest of the class 2
+            r1=(1:size(data_sub1,1))';
+            [r2,~] = MAED_batch_ranking(data_sub2,labels_sub2,numSample-size(data_sub1,1),options);
+            
+        elseif size(data_sub2,1)<nr_samples2
+            %take all samples of class 2
+            %choose the top the rest of the class 1
+            r2=(1:size(data_sub2,1));
+            [r1,~] = MAED_batch_ranking(data_sub2,labels_sub2,numSample-size(data_sub2,1),options);
+            
+        else
+            [r1,~] = MAED_batch_ranking(data_sub1,labels_sub1,nr_samples1,options);
+            [r2,~] = MAED_batch_ranking(data_sub2,labels_sub2,nr_samples2,options);
+        end
         current_sample=[data_sub1(r1,:);data_sub2(r2,:)];
         current_labels=[labels_sub1(r1,:);labels_sub2(r2,:)];
         [~,kernel] = MAED_batch_ranking(current_sample,current_labels,numSample,options);
