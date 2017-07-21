@@ -1,11 +1,11 @@
-function [experiment_info,current_sample,current_labels,kernel]=MAED_batch(data,labels,numSample,batch_size,options,data_limit)
+function [experiment_info,current_sample,current_labels,kernel]=MAED_batch(data,labels,num_samples,batch_size,options,data_limit)
 % MAED_incremental: Online Batch Manifold Adaptive Experimental Design
 %     sampleList = MAED(fea,selectNum,options)
 % Input:
 %   data               - Data matrix MXN, where M is the number of data
 %                          points and N is then number of features
 %   labels             - Labels for data (Mx1)
-%   numSample          - The size of the fixed-size model
+%   num_samples          - The size of the fixed-size model
 %   options            - Struct value in Matlab. The fields in options
 %                               that can be set:
 %
@@ -52,7 +52,7 @@ starting_count=tic;
 ix=randperm(size(data,1));
 data=data(ix,:);
 labels=labels(ix,:);
-[current_sample,current_labels,current_D,kernel]=initialize_sample(options,data,labels,numSample);
+[current_sample,current_labels,current_D,kernel]=initialize_sample(options,data,labels,num_samples);
 
 point=1; %observation point counter
 %check if we record experiment info at observation points kept in option.
@@ -80,11 +80,11 @@ end
 
 point=point+1;
 %start the incremental loop
-for j=0:batch_size:(size(data,1)-numSample-batch_size)
+for j=0:batch_size:(size(data,1)-num_samples-batch_size)
     starting_count1=tic;
     %expand data with new points
-    train_fea_incremental=data(1:numSample+j+batch_size,:);
-    train_fea_class_incremental=labels(1:numSample+j+batch_size,:);
+    train_fea_incremental=data(1:num_samples+j+batch_size,:);
+    train_fea_class_incremental=labels(1:num_samples+j+batch_size,:);
     %if data limit reached use only a randomly selected sample of
     %data_limit points
     if size(train_fea_incremental,1)>=data_limit
@@ -96,7 +96,7 @@ for j=0:batch_size:(size(data,1)-numSample-batch_size)
     old_sample=current_sample;
     old_labels=current_labels;
     old_kernel=kernel;
-    [ranking,kernel] = MAED_batch_ranking(train_fea_incremental,train_fea_class_incremental,numSample,options);
+    [ranking,kernel] = MAED_batch_ranking(train_fea_incremental,train_fea_class_incremental,num_samples,options);
     current_sample=train_fea_incremental(ranking,:);
     current_labels=train_fea_class_incremental(ranking,:);
     %if the new sample does not improve the results, keep the previous

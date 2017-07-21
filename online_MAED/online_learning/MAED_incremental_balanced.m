@@ -1,11 +1,11 @@
-function [experiment_info,current_sample,current_labels,kernel]=MAED_incremental_balanced(data,labels,numSample,batch_size,options)
+function [experiment_info,current_sample,current_labels,kernel]=MAED_incremental_balanced(data,labels,num_samples,batch_size,options)
 % MAED_incremental: Incremental Manifold Adaptive Experimental Design
 %     sampleList = MAED(fea,selectNum,options)
 % Input:
 %   data               - Data matrix MXN, where M is the number of data
 %                          points and N is then number of features
 %   labels             - Labels for data (Mx1)
-%   numSample          - The size of the fixed-size model
+%   num_samples          - The size of the fixed-size model
 %   options            - Struct value in Matlab. The fields in options
 %                               that can be set:
 %
@@ -54,7 +54,7 @@ starting_count=tic;
 ix=randperm(size(data,1));
 data=data(ix,:);
 labels=labels(ix,:);
-[current_sample,current_labels,current_D,kernel]=initialize_sample(options,data,labels,numSample);
+[current_sample,current_labels,current_D,kernel]=initialize_sample(options,data,labels,num_samples);
 
 point=1;
 %check if we record experiment info at observation points kept in option.
@@ -80,16 +80,16 @@ if isfield(options,'plot_label_distr')
 end
 
 %main incremental loop
-for j=0:batch_size:(size(data,1)-numSample-batch_size)
+for j=0:batch_size:(size(data,1)-num_samples-batch_size)
     starting_count1=tic;
-    new_points=data(numSample+j+1:numSample+j+batch_size,:);
-    new_classes=labels(numSample+j+1:numSample+j+batch_size,:);
+    new_points=data(num_samples+j+1:num_samples+j+batch_size,:);
+    new_classes=labels(num_samples+j+1:num_samples+j+batch_size,:);
     old_sample=current_sample;
     old_labels=current_labels;
     old_kernel=kernel;
     
-    %[current_D,kernel,current_sample,current_labels] = MAED_rank_incremental(current_sample,current_labels,new_points,new_classes,indices_to_remove,current_D,numSample,options);
-    [kernel,current_sample,current_labels] =update_model_balanced(current_sample,current_labels,new_points,new_classes,numSample,options);
+    %[current_D,kernel,current_sample,current_labels] = MAED_rank_incremental(current_sample,current_labels,new_points,new_classes,indices_to_remove,current_D,num_samples,options);
+    [kernel,current_sample,current_labels] =update_model_balanced(current_sample,current_labels,new_points,new_classes,num_samples,options);
     %if specified, keep the current model only if it improves the performance from the
     %previous model
     if isfield(options,'test_data')
@@ -135,17 +135,17 @@ if isfield(options,'plot_label_distr')
     plot_label_distributions(experiment_info.lists_of_label_distributions,options.plot_label_distr);
 end
 
-    function [sample,labels,D,ranking,kernel]=initialize_sample(options,data,labels,model_size)
+    function [sample,labels,D,ranking,kernel]=initialize_sample(options,data,labels,num_samples)
         %initial model: select first model_size points from the data
-        train_fea_incremental=data(1:model_size,:);
-        train_fea_class_incremental=labels(1:model_size,:);
+        train_fea_incremental=data(1:num_samples,:);
+        train_fea_class_incremental=labels(1:num_samples,:);
         [ranking,~,D,kernel] = MAED(train_fea_incremental,train_fea_class_incremental,size(train_fea_incremental,1),options);
         sample=train_fea_incremental;
         labels=train_fea_class_incremental;
     end
 
 
-    function [kernel,current_sample,current_labels]=update_model_balanced(train_fea_incremental,train_fea_class_incremental,new_points,new_classes,numSample,options)
+    function [kernel,current_sample,current_labels]=update_model_balanced(train_fea_incremental,train_fea_class_incremental,new_points,new_classes,num_samples,options)
         %we assume that it's always binary problem, hence we split the data into
         %two classes
         %concatenate current points with new points
@@ -153,8 +153,8 @@ end
         train_fea_class_incremental=[train_fea_class_incremental;new_classes];
         classes=unique(train_fea_class_incremental);
         %determine how many samples to select from each class
-        nr_samples1=ceil(numSample/2);
-        nr_samples2=numSample-nr_samples1;
+        nr_samples1=ceil(num_samples/2);
+        nr_samples2=num_samples-nr_samples1;
         
         ix_up_class1=find(train_fea_class_incremental==classes(1));
         ix_up_class2=find(train_fea_class_incremental==classes(2));
@@ -167,13 +167,13 @@ end
             %take all samples of class 1
             %choose the top the rest of the class 2
             r1=(1:size(data_sub1,1))';
-            [r2,~] = MAED_batch_ranking(data_sub2,labels_sub2,numSample-size(data_sub1,1),options);
+            [r2,~] = MAED_batch_ranking(data_sub2,labels_sub2,num_samples-size(data_sub1,1),options);
             
         elseif size(data_sub2,1)<nr_samples2
             %take all samples of class 2
             %choose the top the rest of the class 1
             r2=(1:size(data_sub2,1));
-            [r1,~] = MAED_batch_ranking(data_sub2,labels_sub2,numSample-size(data_sub2,1),options);
+            [r1,~] = MAED_batch_ranking(data_sub2,labels_sub2,num_samples-size(data_sub2,1),options);
             
         else
             [r1,~] = MAED_batch_ranking(data_sub1,labels_sub1,nr_samples1,options);
@@ -183,10 +183,10 @@ end
         
         current_sample=[data_sub1(r1,:);data_sub2(r2,:)];
         current_labels=[labels_sub1(r1,:);labels_sub2(r2,:)];
-        [~,kernel] = MAED_batch_ranking(current_sample,current_labels,numSample,options);
+        [~,kernel] = MAED_batch_ranking(current_sample,current_labels,num_samples,options);
     end
 
-    function [sampleList,K] = MAED_batch_ranking(fea,labels,selectNum,options)
+    function [sampleList,K] = MAED_batch_ranking(fea,labels,num_samples,options)
         %Reference:
         %
         %   [1] Deng Cai and Xiaofei He, "Manifold Adaptive Experimental Design for
@@ -242,7 +242,7 @@ end
         end
         switch lower(options.Method)
             case {lower('Seq')}
-                [sampleList,~] = MAEDseq(K,selectNum,splitLabel,ReguAlpha);
+                [sampleList,~] = MAEDseq(K,num_samples,splitLabel,ReguAlpha);
             otherwise
                 error('Optimization method does not exist!');
         end

@@ -1,11 +1,11 @@
-function [experiment_info,current_sample,current_labels,kernel]=MAED_batch(data,labels,numSample,batch_size,options,data_limit)
+function [experiment_info,current_sample,current_labels,kernel]=MAED_batch(data,labels,num_samples,batch_size,options,data_limit)
 % MAED_incremental: Online Batch Manifold Adaptive Experimental Design
 %     sampleList = MAED(fea,selectNum,options)
 % Input:
 %   data               - Data matrix MXN, where M is the number of data
 %                          points and N is then number of features
 %   labels             - Labels for data (Mx1)
-%   numSample          - The size of the fixed-size model
+%   num_samples          - The size of the fixed-size model
 %   options            - Struct value in Matlab. The fields in options
 %                               that can be set:
 %
@@ -53,7 +53,7 @@ starting_count=tic;
 ix=randperm(size(data,1));
 data=data(ix,:);
 labels=labels(ix,:);
-[current_sample,current_labels,current_D,kernel]=initialize_sample(options,data,labels,numSample);
+[current_sample,current_labels,current_D,kernel]=initialize_sample(options,data,labels,num_samples);
 
 point=1; %observation point counter
 %check if we record experiment info at observation points kept in option.
@@ -88,11 +88,11 @@ end
 
 point=point+1;
 %start the incremental loop
-for j=0:batch_size:(size(data,1)-numSample-batch_size)
+for j=0:batch_size:(size(data,1)-num_samples-batch_size)
     starting_count1=tic;
     %expand data with new points
-    train_fea_incremental=data(1:numSample+j+batch_size,:);
-    train_fea_class_incremental=labels(1:numSample+j+batch_size,:);
+    train_fea_incremental=data(1:num_samples+j+batch_size,:);
+    train_fea_class_incremental=labels(1:num_samples+j+batch_size,:);
     %if data limit reached use only a randomly selected sample of
     %data_limit points
     if size(train_fea_incremental,1)>=data_limit
@@ -104,7 +104,7 @@ for j=0:batch_size:(size(data,1)-numSample-batch_size)
     old_sample=current_sample;
     old_labels=current_labels;
     old_kernel=kernel;
-    [current_sample,current_labels,kernel]=update_model_balanced(train_fea_incremental,train_fea_class_incremental,numSample,options);
+    [current_sample,current_labels,kernel]=update_model_balanced(train_fea_incremental,train_fea_class_incremental,num_samples,options);
     %if the new sample does not improve the results, keep the previous
     %sample
     if isfield(options,'test_data')
@@ -156,13 +156,13 @@ end
         labels=init_labels;
     end
 
-    function [current_sample,current_labels,kernel]=update_model_balanced(train_fea_incremental,train_fea_class_incremental,numSample,options)
+    function [current_sample,current_labels,kernel]=update_model_balanced(train_fea_incremental,train_fea_class_incremental,num_samples,options)
         %we assume that it's always binary problem, hence we split the data into
         %two classes
         classes=unique(train_fea_class_incremental);
         %determine how many samples to select from each class
-        nr_samples1=ceil(numSample/2);
-        nr_samples2=numSample-nr_samples1;
+        nr_samples1=ceil(num_samples/2);
+        nr_samples2=num_samples-nr_samples1;
         
         ix_up_class1=find(train_fea_class_incremental==classes(1));
         ix_up_class2=find(train_fea_class_incremental==classes(2));
@@ -175,13 +175,13 @@ end
             %take all samples of class 1
             %choose the top the rest of the class 2
             r1=(1:size(data_sub1,1))';
-            [r2,~] = MAED_batch_ranking(data_sub2,labels_sub2,numSample-size(data_sub1,1),options);
+            [r2,~] = MAED_batch_ranking(data_sub2,labels_sub2,num_samples-size(data_sub1,1),options);
             
         elseif size(data_sub2,1)<nr_samples2
             %take all samples of class 2
             %choose the top the rest of the class 1
             r2=(1:size(data_sub2,1));
-            [r1,~] = MAED_batch_ranking(data_sub2,labels_sub2,numSample-size(data_sub2,1),options);
+            [r1,~] = MAED_batch_ranking(data_sub2,labels_sub2,num_samples-size(data_sub2,1),options);
             
         else
             [r1,~] = MAED_batch_ranking(data_sub1,labels_sub1,nr_samples1,options);
@@ -189,7 +189,7 @@ end
         end
         current_sample=[data_sub1(r1,:);data_sub2(r2,:)];
         current_labels=[labels_sub1(r1,:);labels_sub2(r2,:)];
-        [~,kernel] = MAED_batch_ranking(current_sample,current_labels,numSample,options);
+        [~,kernel] = MAED_batch_ranking(current_sample,current_labels,num_samples,options);
         
     end
 

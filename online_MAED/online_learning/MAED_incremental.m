@@ -1,11 +1,11 @@
-function [experiment_info,current_sample,current_labels,kernel]=MAED_incremental(data,labels,numSample,batch_size,options)
+function [experiment_info,current_sample,current_labels,kernel]=MAED_incremental(data,labels,num_samples,batch_size,options)
 % MAED_incremental: Incremental Manifold Adaptive Experimental Design
 %     sampleList = MAED(fea,selectNum,options)
 % Input:
 %   data               - Data matrix MXN, where M is the number of data
 %                          points and N is then number of features
 %   labels             - Labels for data (Mx1)
-%   numSample          - The size of the fixed-size model
+%   num_samples          - The size of the fixed-size model
 %   options            - Struct value in Matlab. The fields in options
 %                               that can be set:
 %
@@ -53,7 +53,7 @@ starting_count=tic;
 ix=randperm(size(data,1));
 data=data(ix,:);
 labels=labels(ix,:);
-[current_sample,current_labels,current_D,kernel]=initialize_sample(options,data,labels,numSample);
+[current_sample,current_labels,current_D,kernel]=initialize_sample(options,data,labels,num_samples);
 
 point=1;
 %check if we record experiment info at observation points kept in option.
@@ -79,16 +79,16 @@ if isfield(options,'plot_label_distr')
 end
 
 %main incremental loop
-for j=0:batch_size:(size(data,1)-numSample-batch_size)
+for j=0:batch_size:(size(data,1)-num_samples-batch_size)
     starting_count1=tic;
-    new_points=data(numSample+j+1:numSample+j+batch_size,:);
-    new_classes=labels(numSample+j+1:numSample+j+batch_size,:);
+    new_points=data(num_samples+j+1:num_samples+j+batch_size,:);
+    new_classes=labels(num_samples+j+1:num_samples+j+batch_size,:);
     old_sample=current_sample;
     old_labels=current_labels;
     old_kernel=kernel;
     
     indices_to_remove=[];
-    [current_D,kernel,current_sample,current_labels] = MAED_rank_incremental(current_sample,current_labels,new_points,new_classes,indices_to_remove,current_D,numSample,options);
+    [current_D,kernel,current_sample,current_labels] = MAED_rank_incremental(current_sample,current_labels,new_points,new_classes,indices_to_remove,current_D,num_samples,options);
     %if specified, keep the current model only if it improves the performance from the
     %previous model
     if isfield(options,'test_data')
