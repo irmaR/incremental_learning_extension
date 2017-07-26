@@ -1,4 +1,4 @@
-function [experiment_info,current_sample,current_labels,kernel]=MAED_incremental(data,labels,num_samples,batch_size,options)
+function [experiment_info,model]=MAED_incremental(data,labels,num_samples,batch_size,options)
 % MAED_incremental: Incremental Manifold Adaptive Experimental Design
 %     sampleList = MAED(fea,selectNum,options)
 % Input:
@@ -53,7 +53,7 @@ starting_count=tic;
 ix=randperm(size(data,1));
 data=data(ix,:);
 labels=labels(ix,:);
-[current_sample,current_labels,current_D,kernel]=initialize_sample(options,data,labels,num_samples);
+[current_sample,current_labels,current_D,kernel]=initialize_sample(options,data,labels,batch_size,num_samples);
 
 point=1;
 %check if we record experiment info at observation points kept in option.
@@ -79,16 +79,16 @@ if isfield(options,'plot_label_distr')
 end
 
 %main incremental loop
-for j=0:batch_size:(size(data,1)-num_samples-batch_size)
+for j=batch_size+1:batch_size:(size(data,1)-batch_size)
+    fprintf('%d-%d,%d\n',j,j+batch_size-1,size(j:j+batch_size-1,2))
     starting_count1=tic;
-    new_points=data(num_samples+j+1:num_samples+j+batch_size,:);
-    new_classes=labels(num_samples+j+1:num_samples+j+batch_size,:);
+    new_points=data(j:j+batch_size-1,:);
+    new_classes=labels(j:j+batch_size-1,:);
     old_sample=current_sample;
     old_labels=current_labels;
     old_kernel=kernel;
     
-    indices_to_remove=[];
-    [current_D,kernel,current_sample,current_labels] = MAED_rank_incremental(current_sample,current_labels,new_points,new_classes,indices_to_remove,current_D,num_samples,options);
+    [current_D,kernel,current_sample,current_labels] = MAED_rank_incremental(current_sample,current_labels,new_points,new_classes,current_D,num_samples,options);
     %if specified, keep the current model only if it improves the performance from the
     %previous model
     if isfield(options,'test_data')
@@ -107,7 +107,7 @@ for j=0:batch_size:(size(data,1)-num_samples-batch_size)
             %fprintf('reporting...')
             experiment_info.list_of_selected_data_points{point}=current_sample;
             experiment_info.list_of_selected_labels{point}=current_labels;
-            experiment_info.list_of_kernels{point}=current_kernel;
+            experiment_info.list_of_kernels{point}=kernel;
             experiment_info.list_of_selected_times(point)=toc(starting_count);
             experiment_info.lists_of_processing_times(point)=toc(starting_count1);
             experiment_info.lists_of_areas{point}=current_area;
@@ -129,21 +129,26 @@ for j=0:batch_size:(size(data,1)-num_samples-batch_size)
         end
     end
 end
+
+model.X=current_sample;
+model.Y=current_labels;
+model.K=kernel;
+
 %plot label distribution if specified
 if isfield(options,'plot_label_distr')
     plot_label_distributions(experiment_info.lists_of_label_distributions,options.plot_label_distr);
 end
 
-    function [sample,labels,D,ranking,kernel]=initialize_sample(options,data,labels,model_size)
+    function [sample,labels,D,ranking,kernel]=initialize_sample(options,data,labels,batch_size,model_size)
         %initial model: select first model_size points from the data
-        train_fea_incremental=data(1:model_size,:);
-        train_fea_class_incremental=labels(1:model_size,:);
-        [ranking,~,D,kernel] = MAED(train_fea_incremental,train_fea_class_incremental,size(train_fea_incremental,1),options);
-        sample=train_fea_incremental;
-        labels=train_fea_class_incremental;
+        train_fea_incremental=data(1:batch_size,:);
+        train_fea_class_incremental=labels(1:batch_size,:);
+        [ranking,~,D,kernel] = MAED(train_fea_incremental,train_fea_class_incremental,model_size,options);
+        sample=train_fea_incremental(ranking,:);
+        labels=train_fea_class_incremental(ranking,:);
     end
 
-    function [Dist,K,updated_sample,updated_class] = MAED_rank_incremental(original_sample,original_sample_class,new_data_point,new_data_point_class,indices_to_remove,D,selectNum,options)
+    function [Dist,K,updated_sample,updated_class] = MAED_rank_incremental(original_sample,original_sample_class,new_data_point,new_data_point_class,D,selectNum,options)
         %Reference:
         %
         %   [1] Deng Cai and Xiaofei He, "Manifold Adaptive Experimental Design for
@@ -159,22 +164,9 @@ end
         if isfield(options,'splitLabel')
             splitLabel = options.splitLabel;
         end
-        %I changed here
-        %fprintf('Current size of D is %d',size(D,1))
-        if isempty(indices_to_remove)
-            Dist = EuDist2([original_sample;new_data_point],[],0);
-            updated_sample=[original_sample;new_data_point];
-            updated_class=[original_sample_class;new_data_point_class];
-            nSmp=size(updated_sample,1);
-        elseif isempty(new_data_point)
-            Dist = EuDist2(original_sample,[],0);
-            updated_sample=original_sample;
-            updated_class=original_sample_class;
-            nSmp=size(updated_sample,1);
-        else
-            [Dist,updated_sample,updated_class]=EuDist2_incremental(original_sample,original_sample_class,D,indices_to_remove,new_data_point,new_data_point_class,0);
-            nSmp=size(updated_sample,1);
-        end
+
+        [Dist,updated_sample,updated_class]=EuDist2_incremental(original_sample,original_sample_class,D,new_data_point,new_data_point_class,0);
+        nSmp=size(updated_sample,1);
         K = constructKernel_incremental(Dist,options);
         if isfield(options,'ReguBeta') && options.ReguBeta > 0
             

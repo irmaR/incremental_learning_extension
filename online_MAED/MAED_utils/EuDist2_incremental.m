@@ -1,4 +1,4 @@
-function [D,augmented_sample_for_comparison,gnd] = EuDist2_incremental(original_samples,original_samples_class,D,removed_data_points_ind,new_data_point,new_data_point_class,bSqrt)
+function [D,augmented_sample_for_comparison,gnd] = EuDist2_incremental(X,Y,D,X_new,Y_new,bSqrt)
 %EUDIST2 Efficiently Compute the Euclidean Distance Matrix by Exploring the
 %Matlab matrix operations.
 %
@@ -26,25 +26,20 @@ function [D,augmented_sample_for_comparison,gnd] = EuDist2_incremental(original_
 %removed_data_points_ind;
 %new_data_point;
 %D;
-if length(removed_data_points_ind)>=1
-   remaining_indices=setdiff([1:1:size(D,1)],removed_data_points_ind);
-   D1=D(remaining_indices,remaining_indices);
-   samples=original_samples(remaining_indices,:);
-   class=original_samples_class(remaining_indices,:);
-else
-   samples=original_samples;
-   class=original_samples_class;
-   D1=D;
-end
-    
-augmented_sample_for_comparison=[samples;new_data_point];
-gnd=[class;new_data_point_class];
+% if length(removed_data_points_ind)>=1
+%    remaining_indices=setdiff([1:1:size(D,1)],removed_data_points_ind);
+%    D1=D(remaining_indices,remaining_indices);
+%    samples=original_samples(remaining_indices,:);
+%    class=original_samples_class(remaining_indices,:);
+% else
+
+% end
+augmented_sample_for_comparison=[X;X_new];
+gnd=[Y;Y_new];
 %find Eucl. distance of new samples with remaining samples
-dists=EuDist2(new_data_point,samples,0);
-dist_between_them=EuDist2(new_data_point,[],0);
-dists_orig=EuDist2(augmented_sample_for_comparison,[],0);
-v1=[dists,dist_between_them];
-D2=[D1,dists'];
+%dists_orig=EuDist2(augmented_sample_for_comparison,[],0);
+v1=[EuDist2(X_new,X,0),EuDist2(X_new,[],0)];
+D2=[D,dists'];
 D=[D2;v1];
 %assert(isequal(dists_orig,D)==1);
 %fprintf('Finished adding one example to D')
