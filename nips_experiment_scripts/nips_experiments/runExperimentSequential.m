@@ -1,20 +1,18 @@
-function [results]=runExperiment(settings,method)
+function [results]=runExperimentSequential(settings,method)
 switch lower(method)
-    case {lower('iSRDA_unb')}
-        results=incremental(training_data,training_class,test_data,test_class,reguAlphaParams,reguBetaParams,kernel_params,nr_samples,interval,batch_size,report_points,data_limit,'incr',r,warping,blda,k,WeightMode,NeighborMode,@srdaInference);
-    case {lower('iSRDA')}
+   case {lower('iSRDA')}
         results=iSRKDA(settings,@srdaInference);
     case {lower('iSRKDA')}
-        results=iSRKDA(settings,@srkdaInference);    
+        results=iSRKDASequential(settings,@srkdaInference);    
     case {lower('SRDA')}
         results=bSRDKA(settings,@srdaInference);
     case {lower('SRKDA')}
-        results=bSRDKA(settings,@srkdaInference);
+        results=bSRKDASequential(settings,@srkdaInference);
     case {lower('batch')}
         results=incremental(training_data,training_class,test_data,test_class,reguAlphaParams,reguBetaParams,kernel_params,nr_samples,interval,batch_size,report_points,data_limit,'batch',r,warping,blda,k,WeightMode,NeighborMode,@srdaInference);
-    case {lower('rnd')}
+    case {lower('random')}
         fprintf('Running random sampling balanced version')
-        results=incremental(training_data,training_class,test_data,test_class,reguAlphaParams,reguBetaParams,kernel_params,nr_samples,interval,batch_size,report_points,data_limit,'rnd',r,warping,blda,k,WeightMode,NeighborMode);
+        results=random(settings,@srkdaInference);
     case {lower('lssvm')}
         results=incremental_lssvm(training_data,training_class,test_data,test_class,reguAlphaParams,reguBetaParams,nr_samples,interval,batch_size,report_points,data_limit,'lssvm',r);
 end

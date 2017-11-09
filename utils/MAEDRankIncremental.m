@@ -13,8 +13,10 @@ model.D=updateEuclidDist(model.X,model.D,XNew);
 model.K = constructKernelIncremental(model.D,options);
 
 %add new points to the sample
+indexCutoff=size(model.X,1);
 model.X=[model.X;XNew];
 model.Y=[model.Y;YNew];
+sizeAugmentedSample=size(model.X,1);
 nSmp = size(model.X,1);
 splitLabel = false(nSmp,1);
 
@@ -56,6 +58,8 @@ switch lower(options.Method)
         model.D=model.D(sampleList,sampleList);
         model.K=model.K(sampleList,sampleList);
         model.betas=values;
+        nrRemoved=size(find(sampleList<=indexCutoff),1);
+        model.percentageRemoved=(nrRemoved/sizeAugmentedSample)*100;
     otherwise
         error('Optimization method does not exist!');
 end

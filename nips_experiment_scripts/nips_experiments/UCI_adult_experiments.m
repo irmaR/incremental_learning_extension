@@ -12,7 +12,8 @@ switch nargin
         ks=[k];
 end
 addpath(genpath(pathToCode))
-load(pathToData)
+%load(pathToData)
+
 alphas_per_run=[];
 betas_per_run=[];
 kernels_per_run=[];
@@ -59,7 +60,7 @@ for ns=1:length(NeighborModes)
             fprintf(fileID,'data_limit:%d \n',dataLimit);
             fprintf(fileID,'Using warping?:%d \n',warping);
             fprintf(fileID,'Using balancing?:%d \n',balanced);            
-            for r=1:1               
+            for r=1:2               
                 if paramsPerRun
                     reguBetaParams=[betas_per_run(r)];
                     reguAlphaParams=[alphas_per_run(r)];
@@ -116,7 +117,6 @@ for ns=1:length(NeighborModes)
                 save(sprintf('%s/results.mat',output_path),'results');
                 avg_aucs=zeros(1,length(reportPoints));
                 avg_aucs_lssvm=zeros(1,length(reportPoints));
-                results{i}.aucs
                 for i=1:r
                     avg_aucs=avg_aucs+results{i}.aucs;
                     all_aucs(i,:)=results{i}.aucs;
@@ -140,8 +140,18 @@ for ns=1:length(NeighborModes)
             avg_aucs=avg_aucs/nrRuns;
             avg_runtime=mean(run_times);
             std_runtime=std(run_times);
+            
             save(sprintf('%s/auc.mat',output_path),'avg_aucs','stdev','reportPoints','avg_runtime','std_runtime');
             save(sprintf('%s/results.mat',output_path),'results');
+            
+            %Plots for analysis
+            fig = figure('visible', 'off');
+            plot(res.reportPoints,res.trainAUCs,'r',res.reportPoints,res.aucsReal,'b')
+            xlabel('report point')
+            ylabel('AUC-ROC') 
+            ylim([0 1])
+            legend('AUC train data','AUC test data')
+            saveas(fig,sprintf('%s/trainVStestAUC.jpg',output_path))
             %plot the result
             %plot_results(general_output)
         end

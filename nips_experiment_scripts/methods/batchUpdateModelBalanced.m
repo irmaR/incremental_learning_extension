@@ -1,16 +1,16 @@
-function [model]=batchUpdateModelBalanced(model,options,XNew,YNew,numSamples,dataLimit)
-model.X=[model.X;XNew];
-model.Y=[model.Y;YNew];
-if size(model.X,1)>=dataLimit
-    ix=randperm(size(model.X,1));
-    model.X=model.X(ix(1:options.dataLimit),:);
-    model.Y=model.Y(ix(1:options.dataLimit),:);
-end
+function [model]=batchUpdateModelBalanced(model,options,XObserved,YObserved,numSamples)
+model.X=XObserved;
+model.Y=YObserved;
+%if size(model.X,1)>=dataLimit
+%    ix=randperm(size(model.X,1));
+%    model.X=model.X(ix(1:options.dataLimit),:);
+%    model.Y=model.Y(ix(1:options.dataLimit),:);
+%end
 %we assume that it's always binary problem, hence we split the data into
 %two classes
 classes=unique(model.Y);
-ix1=find(model.Y==classes(1));
-ix2=find(model.Y==classes(2));
+%ix1=find(model.Y==classes(1));
+%ix2=find(model.Y==classes(2));
 
 %determine how many samples to select from each class
 nr_samples1=ceil(numSamples/2);

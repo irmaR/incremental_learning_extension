@@ -1,0 +1,10 @@
+fidTrain='/Users/irma/Documents/MATLAB/DATA/HighMassPhysics/train/all_train.csv';
+fidTest='/Users/irma/Documents/MATLAB/DATA/HighMassPhysics/test/all_test.csv';
+offsetTrain='/Users/irma/Documents/MATLAB/DATA/HighMassPhysics/offsetIndices.mat';
+offsetTest='/Users/irma/Documents/MATLAB/DATA/HighMassPhysics/offsetIndicesTest.mat';
+output='/Users/irma/Documents/MATLAB/RESULTS/Test/HighMass/';
+codePath='/Users/irma/Documents/MATLAB/CODE_local/incremental_learning_extension';
+%highMassPhysicsExperiment('SRKDA',fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,50,200,2000,1,1,[0.0001],[0.001],[5]);
+%highMassPhysicsExperiment('iSRKDA',fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,50,200,2000,1,1,[0.0001],[0.001],[5]);
+%highMassPhysicsExperiment('random',fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,50,200,2000,1,1,[0.0001],[0.001],[5]);
+plotAUCvsObservedPoints('/Users/irma/Documents/MATLAB/RESULTS/Test/HighMass/smp_50/bs_200/',{'iSRKDA','SRKDA','random'},'/Users/irma/Documents/MATLAB/RESULTS/Test/HighMass/smp_50/bs_200/AUCvsObservedPoints.png')

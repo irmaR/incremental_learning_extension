@@ -1,5 +1,5 @@
 
-function [fea, gnd] = GenTwoNoisyCircle(N,perc1)
+function [fea, gnd] = GenTwoNoisyCircle(N,perc1,outputPath)
 %   [fea, gnd] = GenTwoNoisyCircle(N)
 %
 %   version 2.0 --Jan/2012
@@ -21,3 +21,4 @@ feaB = [rB.*cos(thetaPos)+zeroB(1); rB.*sin(thetaPos)+zeroB(2)]'; %'
 
 fea = [feaB;feaA];
 gnd = [ones(N,1);2*ones(N,1)];
+save(outputPath,'fea','gnd');

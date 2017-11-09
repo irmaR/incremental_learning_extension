@@ -57,7 +57,8 @@ function [model,values] = MAED(model,selectNum,options)
 %   Written by Deng Cai (dengcai AT gmail.com)
 %
 nSmp = size(model.X,1);
-
+indexCutoff=selectNum;
+sizeAugmentedSample=size(model.X,1);
 splitLabel = false(nSmp,1);
 if isfield(options,'splitLabel')
     splitLabel = options.splitLabel;
@@ -116,6 +117,8 @@ switch lower(options.Method)
         model.K=K(sampleList,sampleList);
         model.ranking=sampleList;
         model.betas=values;
+        nrRemoved=size(find(sampleList<=indexCutoff));
+        model.percentageRemoved=(nrRemoved/sizeAugmentedSample)*100;
     otherwise
         error('Optimization method does not exist!');
 end
