@@ -42,7 +42,7 @@ pointerObs=selectNum;
 while 1
     starting_count1=tic;
     %if pointerObs>=size(trainOffsetIndices,1)
-    if pointerObs>=10000 %----------------------------------- REMOVE THIS!!!!
+    if pointerObs>=3000 %----------------------------------- REMOVE THIS!!!!
         break
     end
     

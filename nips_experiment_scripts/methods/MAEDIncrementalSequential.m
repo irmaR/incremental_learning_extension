@@ -44,7 +44,7 @@ pointerObs=selectNum;
 while 1
     starting_count1=tic;
     %if pointerObs>=size(trainOffsetIndices,1)
-    if pointerObs>=10000 %----------------------------------- REMOVE THIS!!!!
+    if pointerObs>=3000 %----------------------------------- REMOVE THIS!!!!
         break
     end
     [XNew,YNew]=getDataInstancesSequential(trainFileID,formatting,delimiter,trainOffsetIndices(pointerObs+1:pointerObs+batch));
@@ -69,8 +69,11 @@ while 1
         current_area=area;
         model=newModel;
     end
-    if point<=length(observationPoints)
-    fprintf('point %d, #obs Ppoints %d, pointObs %d, obs %d\n',point,length(observationPoints),pointerObs,observationPoints(point))
+    if area<current_area
+        model=oldModel;
+    else
+        current_area=area;
+        model=newModel;
     end
     if point<=length(observationPoints) && pointerObs<=observationPoints(point)
         res.selectedDataPoints{point}=model.X;

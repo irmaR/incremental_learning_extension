@@ -2,8 +2,42 @@ fidTrain='/Users/irma/Documents/MATLAB/DATA/HighMassPhysics/train/all_train.csv'
 fidTest='/Users/irma/Documents/MATLAB/DATA/HighMassPhysics/test/all_test.csv';
 offsetTrain='/Users/irma/Documents/MATLAB/DATA/HighMassPhysics/offsetIndices.mat';
 offsetTest='/Users/irma/Documents/MATLAB/DATA/HighMassPhysics/offsetIndicesTest.mat';
-output='/Users/irma/Documents/MATLAB/RESULTS/Test/HighMass/';
+output='/Users/irma/Documents/MATLAB/RESULTS/Test/HighMassNoMass/';
 codePath='/Users/irma/Documents/MATLAB/CODE_local/incremental_learning_extension';
-highMassPhysicsExperiment('SRKDA',fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,50,200,2000,1,1,[0.001],[0.001],[0.5]);
-highMassPhysicsExperiment('iSRKDA',fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,50,200,2000,1,1,[0.001],[0.001],[0.5]);
-highMassPhysicsExperiment('random',fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,50,200,2000,1,1,[0.001],[0.001],[0.5]);
+
+for run=1:3
+    output=sprinft('/Users/irma/Documents/MATLAB/RESULTS/Test/HighMassNoMass/run%d/',run);
+    highMassPhysicsExperiment('SRKDA',fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,50,200,2000,1,1,[0.0001],[0.001],[5]);
+    highMassPhysicsExperiment('iSRKDA',fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,50,200,2000,1,1,[0.0001],[0.001],[5]);
+    highMassPhysicsExperiment('random',fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,50,200,2000,1,1,[0.0001],[0.001],[5]);
+end
+
+methods={'SRKDA','iSRKDA','random'};
+
+
+
+avgBestAUCsRandom=containers.Map('KeyType','char','ValueType','Any');
+avgTrueAUCsRandom=containers.Map('KeyType','char','ValueType','Any');
+stdBestAUCsRandom=[];
+stdTrueAUCsRandom=[];
+
+
+for i=1:size(methods,2)
+    trueAUCs=[];
+    bestAUCs=[];
+    for run=1:3
+        resultsPath=sprinft('/Users/irma/Documents/MATLAB/RESULTS/Test/HighMassNoMass/%s/run%d/',methods{i},run);
+        res=load(resultsPath);
+        res=res.results;
+        bestAUCs(run,:)=res.aucs;
+        trueAUCs(run,:)=res.aucsReal;
+    end
+    averageBestAUCs=mean(bestAUCs);
+    averageTrueAUCs=mean(trueAUCs);
+    stdBestAUCs=std(bestAUCs);
+    stdTrueAUCs=std(trueAUCs);
+end
+
+
+
+plotAUCvsObservedPoints('/Users/irma/Documents/MATLAB/RESULTS/Test/HighMassNoMass/smp_50/bs_200/',{'iSRKDA','SRKDA','random'},'/Users/irma/Documents/MATLAB/RESULTS/Test/HighMassNoMass/smp_50/bs_200/AUCvsObservedPoints.png')

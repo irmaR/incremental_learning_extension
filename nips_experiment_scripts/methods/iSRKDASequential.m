@@ -59,6 +59,7 @@ results.finalKernel=res.selectedKernels{1,res.reportPointIndex};
 results.kernels=res.selectedKernels;
 results.bestOptions=best_options;
 results.reguAlpha=reguAlpha;
+results.TrainingIndices=settings.indicesOffsetTrain;
 results.processingTimes=res.processingTimes;
 results.selectionTimes=res.times;
 results.reguBeta=reguBeta;

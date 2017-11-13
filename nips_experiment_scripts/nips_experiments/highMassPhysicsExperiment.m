@@ -1,4 +1,4 @@
-function []=highMassPhysicsExperiment(method,fidTrain,fidTest,fidIndicesTrain,fidIndicesTest,pathToResults,pathToCode,numSelectSamples,batchSize,dataLimit,warping,balanced,betas,alphas,kernels)
+function []=highMassPhysicsExperiment(method,run,fidTrain,fidTest,fidIndicesTrain,fidIndicesTest,pathToResults,pathToCode,numSelectSamples,batchSize,dataLimit,warping,balanced,betas,alphas,kernels)
 %USPS mat contains train,train_class,test and test_class
 %we use one vs all strategy
 NeighborModes='Supervised';
@@ -11,8 +11,8 @@ reguBetaParams=betas;
 reguAlphaParams=alphas;
 kernelParams=kernels;
 
-general_output=sprintf('%s/smp_%d/bs_%d/%s/%s/k_%d/',pathToResults,numSelectSamples,batchSize);
-output_path=sprintf('%s/smp_%d/bs_%d/%s/%s/k_%d/%s/',pathToResults,numSelectSamples,batchSize,method);
+general_output=sprintf('%s/smp_%d/bs_%d/%s/%s/k_%d/run%d/',pathToResults,numSelectSamples,batchSize,run);
+output_path=sprintf('%s/smp_%d/bs_%d/%s/run%d/',pathToResults,numSelectSamples,batchSize,method,run);
 fprintf('Making folder %s',output_path)
 mkdir(output_path)
 param_info=sprintf('%s/params.txt',output_path)
@@ -39,7 +39,7 @@ fprintf(fileID,'Using warping?:%d \n',warping);
 fprintf(fileID,'Using balancing?:%d \n',balanced);
 
 %nrTrain=7000000;
-nrTrain=10000;
+nrTrain=3000;
 batchReport=1000;
 
 settings.initSample=[];
@@ -49,8 +49,11 @@ settings.reportPointIndex=1;
 
 %get Train offset indices
 fidTrain=fopen(fidTrain);
-fidIndicesTrain=load(fidIndicesTrain)
+fidIndicesTrain=load(fidIndicesTrain);
 fidIndicesTrain=fidIndicesTrain.arrayofOffsets;
+%shuffle the array
+ix=randperm(size(fidIndicesTrain,1));
+fidIndicesTrain=fidIndicesTrain(ix',:);
 
 %get Test offset indices
 fidTest=fopen(fidTest);
@@ -63,7 +66,7 @@ shuffledTest=fidIndicesTest(ix',:);
 
 settings.indicesOffsetTrain=fidIndicesTrain;
 settings.XTrainFileID=fidTrain;
-settings.formattingString='%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f';
+settings.formattingString='%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f';
 settings.delimiter=',';
 
 [testData,testClass]=getDataInstancesSequential(fidTest,settings.formattingString,settings.delimiter,shuffledTest(1:2000));
@@ -90,4 +93,6 @@ results=runExperimentSequential(settings,method);
 %save intermediate results just in case
 fprintf('Saving results')
 save(sprintf('%s/results.mat',output_path),'results');
+fclose(fidTrain);
+fclose(fidTest);
 end
