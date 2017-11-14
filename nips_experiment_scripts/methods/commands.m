@@ -2,15 +2,22 @@ fidTrain='/Users/irma/Documents/MATLAB/DATA/HighMassPhysics/train/all_train.csv'
 fidTest='/Users/irma/Documents/MATLAB/DATA/HighMassPhysics/test/all_test.csv';
 offsetTrain='/Users/irma/Documents/MATLAB/DATA/HighMassPhysics/offsetIndices.mat';
 offsetTest='/Users/irma/Documents/MATLAB/DATA/HighMassPhysics/offsetIndicesTest.mat';
-output='/Users/irma/Documents/MATLAB/RESULTS/Test/HighMassNoMass/';
+output='/Users/irma/Documents/MATLAB/RESULTS/Test/HighMassNoMass/samples10000/';
 codePath='/Users/irma/Documents/MATLAB/CODE_local/incremental_learning_extension';
 
+shuffleSeedValidation=1000;
+validationOffset=3000;
+%params=highMassPhysicsExperimentValidation('iSRKDA',@MAEDIncrementalSequential,shuffleSeedValidation,validationOffset,@srkdaInference,fidTrain,offsetTrain,output,codePath,50,200,2000,1,1,[0.0001,0.01],[0.001],[5,10]);
+%params=highMassPhysicsExperimentValidation('iSRKDA',@MAEDBatchSequential,shuffleSeedValidation,validationOffset,@srkdaInference,fidTrain,offsetTrain,output,codePath,50,200,2000,1,1,[0.0001,0.01],[0.001],[5,10]);
 for run=1:3
-     output='/Users/irma/Documents/MATLAB/RESULTS/Test/HighMassNoMass/';
-     highMassPhysicsExperiment('SRKDA',run,fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,50,200,2000,1,1,[0.0001],[0.001],[5]);
-     highMassPhysicsExperiment('iSRKDA',run,fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,50,200,2000,1,1,[0.0001],[0.001],[5]);
-     highMassPhysicsExperiment('random',run,fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,50,200,2000,1,1,[0.0001],[0.001],[5]);
+    %highMassPhysicsExperimenttraining('iSRKDA',run,shuffleSeedValidation,validationOffset,fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,50,200,2000,1,1,[params.reguBeta],[params.reguAlpha],[params.kernelSigma]);
+    %highMassPhysicsExperimenttraining('SRKDA',run,shuffleSeedValidation,validationOffset,fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,50,200,2000,1,1,[params.reguBeta],[params.reguAlpha],[params.kernelSigma]);
 end
+
+     %highMassPhysicsExperimenttraining('SRKDA',run,fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,50,200,2000,1,1,[0.0001],[0.001],[5]);
+%     highMassPhysicsExperimenttraining('iSRKDA',run,fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,50,200,2000,1,1,[0.0001],[0.001],[5]);
+     %highMassPhysicsExperimenttraining('random',run,fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,50,200,2000,1,1,[0.0001],[0.001],[5]);
+%end
 
 methods={'SRKDA','iSRKDA','random'};
 reportPoints=[];
@@ -27,7 +34,7 @@ for i=1:size(methods,2)
     trueAUCs=[];
     bestAUCs=[];
     for run=1:3
-        resultsPath=sprintf('/Users/irma/Documents/MATLAB/RESULTS/Test/HighMassNoMass/smp_50/bs_200/%s/run%d/results.mat',methods{i},run);
+        resultsPath=sprintf('/Users/irma/Documents/MATLAB/RESULTS/Test/HighMassNoMass/samples10000//smp_50/bs_200/%s/run%d/results.mat',methods{i},run);
         res=load(resultsPath);
         res=res.results;
         if size(reportPoints,2)==0
@@ -75,4 +82,3 @@ for i=1:counter
 end
 hold off;
 
-%plotAUCvsObservedPoints('/Users/irma/Documents/MATLAB/RESULTS/Test/HighMassNoMass/smp_50/bs_200/',{'iSRKDA','SRKDA','random'},'/Users/irma/Documents/MATLAB/RESULTS/Test/HighMassNoMass/smp_50/bs_200/AUCvsObservedPoints.png')

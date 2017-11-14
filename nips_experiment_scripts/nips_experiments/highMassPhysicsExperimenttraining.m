@@ -1,4 +1,4 @@
-function []=highMassPhysicsExperiment(method,run,fidTrain,fidTest,fidIndicesTrain,fidIndicesTest,pathToResults,pathToCode,numSelectSamples,batchSize,dataLimit,warping,balanced,betas,alphas,kernels)
+function [output_path]=highMassPhysicsExperimenttraining(method,run,shuffleSeedValidation,validationOffset,fidTrain,fidTest,fidIndicesTrain,fidIndicesTest,pathToResults,pathToCode,numSelectSamples,batchSize,dataLimit,warping,balanced,betas,alphas,kernels)
 %USPS mat contains train,train_class,test and test_class
 %we use one vs all strategy
 NeighborModes='Supervised';
@@ -10,9 +10,7 @@ addpath(genpath(pathToCode))
 reguBetaParams=betas;
 reguAlphaParams=alphas;
 kernelParams=kernels;
-
-general_output=sprintf('%s/smp_%d/bs_%d/%s/%s/k_%d/run%d/',pathToResults,numSelectSamples,batchSize,run);
-output_path=sprintf('%s/smp_%d/bs_%d/%s/run%d/',pathToResults,numSelectSamples,batchSize,method,run);
+output_path=sprintf('%s/%s/run%d/',pathToResults,method,run);
 fprintf('Making folder %s',output_path)
 mkdir(output_path)
 param_info=sprintf('%s/params.txt',output_path)
@@ -38,8 +36,24 @@ fprintf(fileID,'data_limit:%d \n',dataLimit);
 fprintf(fileID,'Using warping?:%d \n',warping);
 fprintf(fileID,'Using balancing?:%d \n',balanced);
 
-%nrTrain=7000000;
-nrTrain=3000;
+%get Train offset indices
+fidTrain=fopen(fidTrain);
+fidIndicesTrain=load(fidIndicesTrain);
+fidIndicesTrain=fidIndicesTrain.arrayofOffsets;
+
+%shuffle the array according to the validation seed
+sVal=RandStream('mt19937ar','Seed',shuffleSeedValidation);
+ix=randperm(sVal,size(fidIndicesTrain,1));
+fidIndicesTrain=fidIndicesTrain(ix((validationOffset+1):end)',:);
+
+%shuffle the array according to the run seed
+s = RandStream('mt19937ar','Seed',run);
+ix=randperm(s,size(fidIndicesTrain,1));
+fidIndicesTrain=fidIndicesTrain(ix',:);
+
+
+
+nrTrain=5000;
 batchReport=1000;
 
 settings.initSample=[];
@@ -47,13 +61,7 @@ settings.initClass=[];
 reportPoints=[numSelectSamples:batchReport:nrTrain,nrTrain]
 settings.reportPointIndex=1;
 
-%get Train offset indices
-fidTrain=fopen(fidTrain);
-fidIndicesTrain=load(fidIndicesTrain);
-fidIndicesTrain=fidIndicesTrain.arrayofOffsets;
-%shuffle the array
-ix=randperm(size(fidIndicesTrain,1));
-fidIndicesTrain=fidIndicesTrain(ix',:);
+
 
 %get Test offset indices
 fidTest=fopen(fidTest);
@@ -61,12 +69,12 @@ fidIndicesTest=load(fidIndicesTest);
 fidIndicesTest=fidIndicesTest.arrayofOffsets;
 
 %sample a small subset from test data
-ix=randperm(size(fidIndicesTest,1));
+ix=randperm(s,size(fidIndicesTest,1));
 shuffledTest=fidIndicesTest(ix',:);
 
-settings.indicesOffsetTrain=fidIndicesTrain;
+settings.indicesOffsetTrain=fidIndicesTrain(1:nrTrain);
 settings.XTrainFileID=fidTrain;
-settings.formattingString='%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f';
+settings.formattingString='%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f';
 settings.delimiter=',';
 
 [testData,testClass]=getDataInstancesSequential(fidTest,settings.formattingString,settings.delimiter,shuffledTest(1:2000));
@@ -88,9 +96,9 @@ settings.balanced=balanced;
 settings.weightMode=WeightModes;
 settings.neighbourMode=NeighborModes;
 settings.ks=ks;
+settings.outputPath=output_path;
 
 results=runExperimentSequential(settings,method);
-%save intermediate results just in case
 fprintf('Saving results')
 save(sprintf('%s/results.mat',output_path),'results');
 fclose(fidTrain);

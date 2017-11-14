@@ -1,17 +1,17 @@
-function [res]=randomSequential(trainFileID,trainOffsetIndices,formatting,delimiter,selectNum,batch,observationPoints,options,inferenceType)
+function [results]=randomSequential(trainFileID,trainOffsetIndices,formatting,delimiter,selectNum,batch,observationPoints,options,inferenceType)
 starting_count=tic;
 nrObsPoints=length(observationPoints);
-res.selectedDataPoints=cell(1, nrObsPoints);
-res.selectedLabels=cell(1, nrObsPoints);
-res.selectedKernels=cell(1, nrObsPoints);
-res.selectedDistances=cell(1, nrObsPoints);
-res.selectedAUCs=cell(1, nrObsPoints);
-res.times=zeros(1, nrObsPoints);
-res.processingTimes=zeros(1, nrObsPoints);
-res.selectedBetas=cell(1,nrObsPoints);
-res.realBetas=cell(1,nrObsPoints);
-res.percentageRemoved=cell(1,nrObsPoints);
-res.trainAUCs=cell(1,nrObsPoints);
+results.selectedDataPoints=cell(1, nrObsPoints);
+results.selectedLabels=cell(1, nrObsPoints);
+results.selectedKernels=cell(1, nrObsPoints);
+results.selectedDistances=cell(1, nrObsPoints);
+results.selectedAUCs=cell(1, nrObsPoints);
+results.times=zeros(1, nrObsPoints);
+results.processingTimes=zeros(1, nrObsPoints);
+results.selectedBetas=cell(1,nrObsPoints);
+results.realBetas=cell(1,nrObsPoints);
+results.percentageRemoved=cell(1,nrObsPoints);
+results.trainAUCs=cell(1,nrObsPoints);
 
 %get first selectNum points from the file
 indices=trainOffsetIndices(1:selectNum);
@@ -23,60 +23,41 @@ current_area=inferenceType(model.K,model.X,model.Y,options.test,options.test_cla
 aucTrain=-1;
 current_area=max(current_area,1-current_area);
 aucTrain=max(aucTrain,1-aucTrain);
-res.selectedKernels{point}=model.K;
-res.selectedDistances{point}=model.D;
-res.selectedDataPoints{point}=model.X;
-res.selectedLabels{point}=model.Y;
-res.times(point)=toc(starting_count);
-res.reportPointIndex=point;
-res.processingTimes(point)=toc(starting_count);
-res.selectedAUCs{point}=current_area;
-res.AUCs{point}=current_area;
-res.trainAUCs{point}=aucTrain;
-res.realBetas{point}=values;
-res.selectedBetas{point}=values;
-res.percentageRemoved{point}=0;
+results.selectedKernels{point}=model.K;
+results.selectedDistances{point}=model.D;
+results.selectedDataPoints{point}=model.X;
+results.selectedLabels{point}=model.Y;
+results.times(point)=toc(starting_count);
+results.reportPointIndex=point;
+results.processingTimes(point)=toc(starting_count);
+results.selectedAUCs{point}=current_area;
+results.AUCs{point}=current_area;
+results.trainAUCs{point}=aucTrain;
+results.realBetas{point}=values;
+results.selectedBetas{point}=values;
+results.percentageRemoved{point}=0;
 point=point+1;
 pointerObs=selectNum;
 
 while 1
     starting_count1=tic;
-    %if pointerObs>=size(trainOffsetIndices,1)
-    if pointerObs>=3000  %----------------------------------- REMOVE THIS!!!!
+    if pointerObs+batch>=size(trainOffsetIndices,1)
         break
     end
     ix=randperm(pointerObs+batch);
     indices=trainOffsetIndices(ix,:);
+    indices=indices(1:selectNum);
     %sample dataLimit datapoints from here
     oldModel=model;
     [XObserved,YObserved]=getDataInstancesSequential(trainFileID,formatting,delimiter,indices);
-%     classes=unique(YObserved);
-%     ix_up_class1=find(YObserved==classes(1));
-%     ix_up_class2=find(YObserved==classes(2));
-%     nr_samples1=ceil(selectNum/2);
-%     nr_samples2=selectNum-nr_samples1;
-%     if nr_samples1>size(ix_up_class1,1)
-%         nr_samples1=size(ix_up_class1,1);
-%         nr_samples2=selectNum-nr_samples1;
-%     end
-%     if nr_samples2>size(ix_up_class2,1)
-%         nr_samples2=size(ix_up_class2,1);
-%         nr_samples1=selectNum-nr_samples2;
-%     end
-% 
-%     newModel.X=[XObserved(ix_up_class1(1:nr_samples2),:);XObserved(ix_up_class2(1:nr_samples2),:)];
-%     newModel.Y=[YObserved(ix_up_class1(1:nr_samples2),:);YObserved(ix_up_class2(1:nr_samples2),:)];
-    newModel.X=XObserved(1:selectNum,:);
-    newModel.Y=YObserved(1:selectNum,:);
+    newModel.X=XObserved;
+    newModel.Y=YObserved;
     [newModel,values]=MAED(newModel,selectNum,options);
     %keep the new model if it improves the auc
     fprintf('Model size for inference %d, Test class size %d\n',size(newModel.X,1),size(options.test,1));
     area=inferenceType(newModel.K,newModel.X,newModel.Y,options.test,options.test_class,options);
     areaTrain=-1;
-    %areaTrain=inferenceType(newModel.K,newModel.X,newModel.Y,newModel.X,newModel.Y,options);
     area=max(area,1-area);
-    %areaTrain=max(areaTrain,1-areaTrain);
-    %area=run_inference(kernel,current_sample,current_labels,options.test,options.test_class,options);
     if area<current_area
         model=oldModel;
     else
@@ -84,23 +65,22 @@ while 1
         model=newModel;
     end
     if point<=length(observationPoints) && pointerObs<=observationPoints(point)
-        res.selectedDataPoints{point}=model.X;
-        res.selectedLabels{point}=model.Y;
-        res.selectedKernels{point}=model.K;
-        res.times(point)=toc(starting_count);
-        res.processingTimes(point)=toc(starting_count1);
-        res.selectedAUCs{point}=current_area;
-        res.percentageRemoved{point}=newModel.percentageRemoved;
-        res.AUCs{point}=area;
-        res.trainAUCs{point}=areaTrain;
-        res.selectedBetas{point}=oldModel.betas;
-        res.realBetas{point}=newModel.betas;
-        res.reportPointIndex=point;
-        %point=point+1;
+        results.selectedDataPoints{point}=model.X;
+        results.selectedLabels{point}=model.Y;
+        results.selectedKernels{point}=model.K;
+        results.times(point)=toc(starting_count);
+        results.processingTimes(point)=toc(starting_count1);
+        results.selectedAUCs{point}=current_area;
+        results.percentageRemoved{point}=newModel.percentageRemoved;
+        results.AUCs{point}=area;
+        results.trainAUCs{point}=areaTrain;
+        results.selectedBetas{point}=oldModel.betas;
+        results.realBetas{point}=newModel.betas;
+        results.reportPointIndex=point;
         pointerObs=pointerObs+batch;
     end
     if pointerObs>=observationPoints(point)
-        res.reportPointIndex=point;
+        results.reportPointIndex=point;
         point=point+1;
         pointerObs=pointerObs+batch;
     end

@@ -1,4 +1,4 @@
-function [reguAlpha,reguBeta,kernelSigma]=tuneParams(settings,inferenceType)
+function [reguAlpha,reguBeta,kernelSigma]=tuneParams(settings,methodType,inferenceType)
 if length(settings.reguAlphaParams)==1 && length(settings.kernelParams)==1 && length(settings.reguBetaParams)==1
     reguAlpha = settings.reguAlphaParams(1);
     kernelSigma = settings.kernelParams(1);
@@ -17,8 +17,6 @@ else
                 options.k=settings.ks;
                 options.WeightMode=settings.weightMode;
                 options.NeighborMode=settings.neighbourMode;
-                options.test=settings.XTest;
-                options.test_class=settings.YTest;
                 sprintf('Run %d, Alpha: %f, Sigma: %f',settings.run,options.ReguAlpha,options.t)
                 %split training data into 5 folds for tuning the parameters
                 folds=split_into_k_folds(settings.XTrain,settings.YTrain,5);
@@ -44,11 +42,14 @@ else
                     ix=randperm(s,size(train_batch,1))';
                     train_batch=train_batch(ix,:);
                     train_batch_class=train_batch_class(ix,:);
-                    [res]=MAEDIncremental(train_batch,train_batch_class,settings.numSelectSamples,settings.batchSize,options,report_points_up,settings.balanced,inferenceType);
+                    options.test=folds{k}.test;
+                    options.test_class=folds{k}.test_class;
+                    
+                    [res]=methodType(settings,options,inferenceType);                    
                     aucs=[];
                     for s=1:size(res.selectedKernels,1)
                         area=inferenceType(cell2mat(res.selectedKernels(s)),cell2mat(res.selectedDataPoints(s)),cell2mat(res.selectedLabels(s)),folds{k}.test,folds{k}.test_class,options);
-                        fprintf('Area %f\t',area)
+                        fprintf('Area %f\t\n',area)
                         aucs(s)=area;
                     end
                     performances(k)=mean(aucs);

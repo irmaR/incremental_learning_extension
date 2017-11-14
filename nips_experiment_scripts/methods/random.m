@@ -41,38 +41,22 @@ options.WeightMode=settings.weightMode;
 options.NeighborMode=settings.neighbourMode;
 options.test=settings.XTest;
 options.test_class=settings.YTest;
+best_options=options;
 %measure time
 tic;
+results=[];
+results.tuningTime=tuningTime;
+results.bestOptions=best_options;
+results.reguAlpha=reguAlpha;
+results.reguBeta=reguBeta;
+results.sigma=kernelSigma;
 fprintf('Running the learning...')
 sprintf('Run %d, Alpha: %f, Sigma: %f',settings.run,options.ReguAlpha,options.t)
 fprintf('Init sample size %d-%d',size(settings.initSample,1),size(settings.initSample,2))
 
-[res]=randomSequential(settings.XTrainFileID,settings.indicesOffsetTrain,settings.formattingString,settings.delimiter,settings.numSelectSamples,settings.batchSize,settings.reportPoints,options,inferenceType);
+[results]=randomSequential(settings.XTrainFileID,settings.indicesOffsetTrain,settings.formattingString,settings.delimiter,settings.numSelectSamples,settings.batchSize,settings.reportPoints,options,inferenceType);
 
 runtime=toc;
-best_options=options;
-results.selectedPoints=res.selectedDataPoints;
-results.selectedLabels=res.selectedLabels;
-results.finalSample=res.selectedDataPoints{1,res.reportPointIndex};
-results.finalClass=res.selectedLabels{1,res.reportPointIndex};
-results.finalKernel=res.selectedKernels{1,res.reportPointIndex};
-results.kernels=res.selectedKernels;
-results.bestOptions=best_options;
-results.reguAlpha=reguAlpha;
-results.processingTimes=res.processingTimes;
-results.selectionTimes=res.times;
-results.reguBeta=reguBeta;
-results.sigma=kernelSigma;
-results.selectedBetas=res.selectedBetas;
-results.realBetas=res.realBetas;
-results.aucs=cell2mat(res.selectedAUCs);
-results.aucsReal=cell2mat(res.AUCs);
-results.trainAUCs=cell2mat(res.trainAUCs);
-results.tuningTime=tuningTime;
-results.percentageRemoved=res.percentageRemoved;
-results.reportPoints=settings.reportPoints;
-results.testPoints=settings.XTest;
-results.testLabels=settings.YTest;
+
 results.runtime=runtime;
-results.reportPointIndex=res.reportPointIndex;
 end
