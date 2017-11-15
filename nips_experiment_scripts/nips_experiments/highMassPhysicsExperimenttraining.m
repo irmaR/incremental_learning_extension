@@ -97,7 +97,6 @@ settings.weightMode=WeightModes;
 settings.neighbourMode=NeighborModes;
 settings.ks=ks;
 settings.outputPath=output_path;
-
 results=runExperimentSequential(settings,method);
 fprintf('Saving results')
 save(sprintf('%s/results.mat',output_path),'results');
