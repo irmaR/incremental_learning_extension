@@ -7,9 +7,9 @@ switch lower(method)
     case {lower('iSRKDA')}
         results=iSRKDA(settings,@srkdaInference);    
     case {lower('SRDA')}
-        results=bSRDKA(settings,@srdaInference);
+        results=bSRKDA(settings,@srdaInference);
     case {lower('SRKDA')}
-        results=bSRDKA(settings,@srkdaInference);
+        results=bSRKDA(settings,@srkdaInference);
     case {lower('iSRDASeq')}
         results=iSRKDASequential(settings,@srdaInference);
     case {lower('iSRKDASeq')}

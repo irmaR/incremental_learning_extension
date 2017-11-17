@@ -1,6 +1,7 @@
 function []=RCVExperiments(method,pathToData,pathToResults,pathToCode,nrRuns,nrSamples,batchSize,dataLimit,warping,balanced,reguBetaParams,reguAlphaParams,kernelParams,k,WeightMode,NeighborMode)
 %RCV mat contains train,train_class,test and test_class
 %we use one vs all strategy
+nargin
 switch nargin
     case 13
         NeighborModes={'Supervised'};
