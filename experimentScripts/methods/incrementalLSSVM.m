@@ -9,7 +9,7 @@ options.kernel = kernel;
 options.gamma=gamma;
 options.test=settings.XTest;
 options.test_class=settings.YTest;
-
+tic;
 [results]=FSLSSVM(settings,options,@lssvmInference);
 results.tuningTime=tuningTime;
 results.bestOptions=options;
