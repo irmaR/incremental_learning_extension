@@ -2,7 +2,7 @@ function [area]=srdaInference(K,trainFea,trainLabels,testFea,testLabels,options)
 %if we only have one class, return area=0
 if length(unique(trainLabels))==1
     fprintf('only one label selected!\n')
-    unique(selected_tr_labels)
+    unique(trainLabels)
     fprintf('\n')
     area=NaN;
     return
