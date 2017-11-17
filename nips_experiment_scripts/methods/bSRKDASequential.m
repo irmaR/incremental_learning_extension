@@ -49,14 +49,12 @@ tic;
 best_options=options;
 %shuffle data
 fprintf('Running the learning...')
-results=[];
+[results]=MAEDBatchSequential(settings,options,inferenceType);
 results.tuningTime=tuningTime;
 results.bestOptions=best_options;
 results.reguAlpha=reguAlpha;
 results.reguBeta=reguBeta;
 results.sigma=kernelSigma;
-[results]=MAEDBatchSequential(settings,options,inferenceType);
 runtime=toc;
 results.runtime=runtime;
-fprintf('RESULTS')
 end

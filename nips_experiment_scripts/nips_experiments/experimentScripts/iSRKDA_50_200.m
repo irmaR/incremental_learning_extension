@@ -16,7 +16,8 @@ runs=2;
 %resultsPath=highMassRandom(fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,runs,validationOffset,numSelectSamples,batchSize,dataLimit);
 %highMassPlotAUCs(resultsPath,runs)
 
-resultsPath=highMassSRKDA(fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,runs,validationOffset,numSelectSamples,batchSize,dataLimit);
-highMassPlotAUCs(resultsPath,runs)
+%resultsPath=highMassSRKDA(fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,runs,validationOffset,numSelectSamples,batchSize,dataLimit);
+res='/Users/irma/Documents/MATLAB/RESULTS/Test/HighMass/smp_50/bs_200/';
+highMassPlotAUCs(res,runs)
 
 %resultsPath=highMassRandom(fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,runs,validationOffset,numSelectSamples,batchSize,dataLimit)

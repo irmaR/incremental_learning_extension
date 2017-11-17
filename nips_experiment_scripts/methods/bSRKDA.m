@@ -1,4 +1,4 @@
-function [results]=bSRDKA(settings,inferenceType)
+function [results]=bSRKDA(settings,inferenceType)
 start_tuning=tic;
 [reguAlpha,reguBeta,kernelSigma]=tuneParams(settings,inferenceType);
 tuningTime=toc(start_tuning)
@@ -21,13 +21,12 @@ best_options=options;
 %shuffle data
 s = RandStream('mt19937ar','Seed',settings.run);
 fprintf('Running the learning...')
-results=[];
+[results]=MAEDBatch(settings,options,inferenceType);
 results.tuningTime=tuningTime;
 results.bestOptions=best_options;
 results.reguAlpha=reguAlpha;
 results.reguBeta=reguBeta;
 results.sigma=kernelSigma;
-[results]=MAEDBatch(settings.XTrain,settings.YTrain,settings.numSelectSamples,settings.batchSize,settings.dataLimit,options,settings.reportPoints,settings.balanced,inferenceType);
 runtime=toc;
 results.runtime=runtime;
 end

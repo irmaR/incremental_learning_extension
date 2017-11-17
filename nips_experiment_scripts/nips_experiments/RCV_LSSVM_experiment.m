@@ -17,13 +17,7 @@ for r=1:nr_runs
         for c=1:4
            train=folds{r}.train;
            train_class=folds{r}.train_class;
-           %delete later!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-           %ix=randperm(size(train,1));
-           %train=train(ix(1:500),:);
-           %train_class=train_class(ix(1:500),:);
-           %train=train(ix(1:(size(train,1)/2)),:);
-           %train_class=train_class(ix(1:(size(train_class,1)/2)),:);
-           
+  
            test=folds{r}.test;
            test_class=folds{r}.test_class;
 

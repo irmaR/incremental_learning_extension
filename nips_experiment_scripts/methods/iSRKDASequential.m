@@ -46,14 +46,12 @@ fprintf('Running the learning...')
 sprintf('Run %d, Alpha: %f, Sigma: %f',settings.run,options.ReguAlpha,options.t)
 fprintf('Init sample size %d-%d',size(settings.initSample,1),size(settings.initSample,2))
 best_options=options;
-
-results=[];
+[results]=MAEDIncrementalSequential(settings,options,inferenceType);
 results.tuningTime=tuningTime;
 results.bestOptions=best_options;
 results.reguAlpha=reguAlpha;
 results.reguBeta=reguBeta;
 results.sigma=kernelSigma;
-[results]=MAEDIncrementalSequential(settings,options,inferenceType);
 runtime=toc;
 results.runtime=runtime;
 end

@@ -1,4 +1,4 @@
-function [results]=random(settings,inferenceType)
+function [results]=sequentialRandom(settings,inferenceType)
 results=[];
 start_tuning=tic;
 [reguAlpha,reguBeta,kernelSigma]=tuneParams(settings,inferenceType);
