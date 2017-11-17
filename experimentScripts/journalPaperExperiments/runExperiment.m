@@ -19,7 +19,7 @@ switch lower(method)
     case {lower('SRKDASeq')}
         results=bSRKDASequential(settings,@srkdaInference);
     case {lower('random')}
-        results=random(settings,@srkdaInference);
+        results=randomMethod(settings,@srkdaInference);
     case {lower('randomSeq')}
         results=randomSequential(settings,@srkdaInference);
     case {lower('lssvm')}
