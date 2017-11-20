@@ -59,6 +59,7 @@ for j=0:settings.batchSize:(size(settings.XTrain,1)-settings.numSelectSamples-se
     area=inferenceType(newModel.K,newModel.X,newModel.Y,options.test,options.test_class,options);
     %areaTrain=inferenceType(newModel.K,newModel.X,newModel.Y,newModel.X,newModel.Y,options);
     area=max(area,1-area);
+    areaTrain=-1;
     %areaTrain=max(areaTrain,1-areaTrain);
     
     %area=run_inference(kernel,current_sample,current_labels,options.test,options.test_class,options);

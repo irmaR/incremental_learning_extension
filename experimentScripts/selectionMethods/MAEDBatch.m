@@ -63,9 +63,10 @@ for j=0:settings.batchSize:(size(settings.XTrain,1)-settings.numSelectSamples-se
     end
     %keep the new model if it improves the auc
     area=inferenceType(newModel.K,newModel.X,newModel.Y,options.test,options.test_class,options);
-    areaTrain=inferenceType(newModel.K,newModel.X,newModel.Y,newModel.X,newModel.Y,options);
+    %areaTrain=inferenceType(newModel.K,newModel.X,newModel.Y,newModel.X,newModel.Y,options);
+    areaTrain=-1;
     area=max(area,1-area);
-    areaTrain=max(areaTrain,1-areaTrain);
+    %areaTrain=max(areaTrain,1-areaTrain);
     
     %area=run_inference(kernel,current_sample,current_labels,options.test,options.test_class,options);
     if area<current_area

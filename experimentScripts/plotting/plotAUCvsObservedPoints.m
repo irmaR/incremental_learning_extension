@@ -1,17 +1,17 @@
-function []=plotAUCvsObservedPoints(pathToResults,methodNames,output)
+function []=plotAUCvsObservedPoints(pathToResults,methodNames)
 BestAUCs=containers.Map('KeyType','char','ValueType','Any')
 RealAUCs=containers.Map('KeyType','char','ValueType','Any')
 reportPoints=[];
 nrReportPoints=0;
 for i=1:size(methodNames,2)
-    pathToRes=sprintf('%s/%s/results.mat',pathToResults,methodNames{i});
-    res=load(pathToRes);
-    res=res.results;
-    BestAUCs(methodNames{i})=res.aucs;
-    RealAUCs(methodNames{i})=res.aucsReal;
+    pathToRes=sprintf('%s/%s/auc.mat',pathToResults,methodNames{i});
+    res=load(pathToRes)
+    %res=res.results
+    BestAUCs(methodNames{i})=res.avgAucs;
+    RealAUCs(methodNames{i})=res.realAvgAUCs;
     if size(reportPoints,2)==0
         reportPoints=res.reportPoints;
-        nrReportPoints=size(res.aucsReal,2);
+        nrReportPoints=size(res.realAvgAUCs,2);
     end
 end
 counter=size(methodNames,2);

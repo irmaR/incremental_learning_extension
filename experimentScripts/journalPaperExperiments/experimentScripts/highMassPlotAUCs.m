@@ -1,5 +1,5 @@
-function []=highMassPlotAUCs(results,runs)
-methods={'SRKDA','iSRKDA','random'};
+function []=highMassPlotAUCs(results,methods,colors,runs)
+%methods={'SRKDA','iSRKDA','lssvm','random'};
 reportPoints=[];
 nrReportPoints=0;
 avgBestAUCs=containers.Map('KeyType','char','ValueType','Any');
@@ -34,9 +34,9 @@ end
 
 counter=size(keys(avgBestAUCs),2);
 methods=keys(avgBestAUCs)
-colors('iSRKDA')={'blue'};
-colors('SRKDA')={'red'};
-colors('random')={'green'};
+%colors('iSRKDA')={'blue'};
+%colors('SRKDA')={'red'};
+%colors('random')={'green'};
 figure;
 hold on;
 reportPoints=reportPoints(1:nrReportPoints);

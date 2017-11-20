@@ -17,7 +17,14 @@ runs=2;
 %highMassPlotAUCs(resultsPath,runs)
 
 %resultsPath=highMassSRKDA(fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,runs,validationOffset,numSelectSamples,batchSize,dataLimit);
-res='/Users/irma/Documents/MATLAB/RESULTS/Test/HighMass/smp_50/bs_200/';
-highMassPlotAUCs(res,runs)
 
+
+res='/Users/irma/Documents/MATLAB/RESULTS/ResultsNovember/Incremental/RCV/smp_10/bs_100/';
+methods={'SRKDA','iSRKDA','lssvm','random'};
+colors('iSRKDA')={'blue'};
+colors('SRKDA')={'red'};
+colors('lssvm')={'black'};
+colors('random')={'green'};
+%plotAUCvsObservedPoints(res,methods,colors,runs)
+plotAUCvsObservedPoints(res,methods)
 %resultsPath=highMassRandom(fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,runs,validationOffset,numSelectSamples,batchSize,dataLimit)

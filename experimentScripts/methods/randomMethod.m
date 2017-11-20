@@ -1,4 +1,4 @@
-function [results]=random(settings,inferenceType)
+function [results]=randomMethod(settings,inferenceType)
 start_tuning=tic;
 [reguAlpha,reguBeta,kernelSigma]=tuneParams(settings,inferenceType);
 tuningTime=toc(start_tuning)
@@ -21,7 +21,7 @@ best_options=options;
 %shuffle data
 s = RandStream('mt19937ar','Seed',settings.run);
 fprintf('Running the learning...')
-[results]=MAEDBatch(settings,options,inferenceType);
+[results]=randomSelection(settings,options,inferenceType);
 results.tuningTime=tuningTime;
 results.bestOptions=best_options;
 results.reguAlpha=reguAlpha;
