@@ -1,0 +1,7 @@
+RCV 10
+screen -dmS RCV_iSRKDA_10_bal_100 matlab -nodesktop -nosplash -r  "RCVExperiments('iSRKDA','/home/irma/work/DATA/incremental_learning/RCV/RCV_folds.mat','/home/irma/work/RESULTS/Incremental/RCV/','/home/irma/work/CODE/incremental_learning_extension/',10,10,100,3000,1,1,[0.1],[0.01],[0.5],0,'HeatKernel','Supervised')"
+screen -dmS RCV_iSRKDA_10_bal_100 matlab -nodesktop -nosplash -r "RCVExperiments('SRKDA','/home/irma/work/DATA/incremental_learning/RCV/RCV_folds.mat','/home/irma/work/RESULTS/Incremental/RCV/','/home/irma/work/CODE/incremental_learning_extension/',10,10,100,3000,1,1,[0.1],[0.01],[0.5],0,'HeatKernel','Supervised')"
+screen -dmS RCV_iSRKDA_10_bal_100 matlab -nodesktop -nosplash -r  "RCVExperiments('SRDA','/home/irma/work/DATA/incremental_learning/RCV/RCV_folds.mat','/home/irma/work/RESULTS/Incremental/RCV/','/home/irma/work/CODE/incremental_learning_extension/',10,10,100,3000,1,1,[0.1],[0.01],[0.5],0,'HeatKernel','Supervised')"
+screen -dmS RCV_iSRKDA_10_bal_100 matlab -nodesktop -nosplash -r "RCVExperiments('random','/home/irma/work/DATA/incremental_learning/RCV/RCV_folds.mat','/home/irma/work/RESULTS/Incremental/RCV/','/home/irma/work/CODE/incremental_learning_extension/',10,10,100,3000,1,1,[0.1],[0.01],[0.5],0,'HeatKernel','Supervised')"
+screen -dmS lssvm_10_bal_100 matlab -nodesktop -nosplash -r "RCVLSSVMExperiment('/home/irma/work/DATA/incremental_learning/RCV/RCV_folds.mat','/ifshome/fscalzo/data/Irma/ResultsNovember/Incremental/RCV/','/ifshome/fscalzo/Irma/CODE/incremental_learning_extension/',10,10,100,3000,[0.01],[0.5])"
+

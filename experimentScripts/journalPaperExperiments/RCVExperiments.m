@@ -48,7 +48,7 @@ for ns=1:length(NeighborModes)
                 tuning_time=[];
                 runtime=[];
                 res=[];
-                for c=1:2
+                for c=1:4
                     trainData=folds{r}.train;
                     trainClass=folds{r}.train_class;
                     testData=folds{r}.test;
@@ -85,9 +85,7 @@ for ns=1:length(NeighborModes)
                     settings.ks=ks(kNN);
                     settings.outputPath=outputPath;
                     settings.reportPointIndex=1;
-                    
-                    res1=runExperiment(settings,method)
-                    
+                    res1=runExperiment(settings,method)                   
                     selectedAUCs(c,:)=cell2mat(res1.selectedAUCs);
                     realAUCs(c,:)=cell2mat(res1.AUCs);
                     tuningTime(c,:)=res1.tuningTime;

@@ -4,6 +4,7 @@ function []=RCVLSSVMExperiment(pathToData,pathToResults,pathToCode,nrRuns,nrSamp
 addpath(genpath(pathToCode))
 load(pathToData)
 
+
 outputPath=sprintf('%s/smp_%d/bs_%d/%s/',pathToResults,nrSamples,batchSize,'lssvm');
 fprintf('Making folder %s',outputPath)
 mkdir(outputPath)
