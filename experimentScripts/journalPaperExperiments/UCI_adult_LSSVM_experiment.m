@@ -1,82 +1,100 @@
-function []=UCI_adult_LSSVM_experiments(method,path_to_data,path_to_results,path_to_code,nr_runs,nr_samples,batch_size,data_limit,interval)
+function []=UCI_adult_LSSVM_experiment(pathToData,pathToResults,pathToCode,nrRuns,nrSamples,batchSize,dataLimit,reguGammas,kernelParams)
 %USPS mat contains train,train_class,test and test_class
 %we use one vs all strategy
-addpath(genpath(path_to_code))  
-load(path_to_data)
+addpath(genpath(pathToCode))
+load(pathToData)
 
-general_output=sprintf('%s/smp_%d/bs_%d/',path_to_results,nr_samples,batch_size);
-output_path=sprintf('%s/smp_%d/bs_%d/%s/',path_to_results,nr_samples,batch_size,method);
-fprintf('Making folder %s',output_path)
-mkdir(output_path)
+outputPath=sprintf('%s/smp_%d/bs_%d/%s/',pathToResults,nrSamples,batchSize,'lssvm');
+fprintf('Making folder %s',outputPath)
+mkdir(outputPath)
 
-for r=1:nr_runs
-    s = RandStream('mt19937ar','Seed',r);    
-    load(path_to_data)
+for r=1:nrRuns
+    s = RandStream('mt19937ar','Seed',r);
+    load(pathToData)
     %shuffle the training data with the seed according to the run
     ix=randperm(s,size(train,1))';
     %pick 60% of the data in this run to be used
-    train=train(ix(1:ceil(size(ix,1)*2/3)),:);
-    train_class=train_class(ix(1:ceil(size(ix,1)*2/3),:));
+    trainData=train(ix(1:ceil(size(ix,1)*2/3)),:);
+    trainClass=train_class(ix(1:ceil(size(ix,1)*2/3),:));
     
     %standardize the training and test data
-    train=standardizeX(train);
-    test=standardizeX(test);
+    [trainData,min_train,max_train]=standardizeX(trainData);
+    testData=standardize(test,min_train,max_train);
     
     %this test dataset is pretty big so we will sample 1000 points in each
     %run
     ix=randperm(s,size(test,1))';
-    test=test(ix(1:1000),:);
-    test_class=test_class(ix(1:1000),:);
+    testData=testData(ix(1:1000),:);
+    testClass=test_class(ix(1:1000),:);
     
-    train_class(train_class~=1)=-1;
-    train_class(train_class==2)=1;
-    test_class(test_class~=1)=-1;
-    test_class(test_class==2)=1;
+    trainClass(trainClass~=1)=-1;
+    trainClass(trainClass==2)=1;
+    testClass(testClass~=1)=-1;
+    testClass(testClass==2)=1;
     
-    fprintf('Number of training data points %d-%d, class %d\n',size(train,1),size(train,2),size(train_class,1));
+    fprintf('Number of training data points %d-%d, class %d\n',size(trainData,1),size(trainData,2),size(train_class,1));
     fprintf('Number of test data points %d-%d\n',size(test,1),size(test,2));
-    report_points=[nr_samples:interval:size(train,1)-interval];
-    fprintf('Number of report points:%d',length(report_points))
+    reportPoints=[nrSamples:batchSize:size(trainData,1)-batchSize];
+    
+    settings.XTest=testData;
+    settings.YTest=testClass;
+    settings.XTrain=trainData;
+    settings.YTrain=trainClass;
+    settings.numSelectSamples=nrSamples;
+    settings.batchSize=batchSize;
+    settings.reportPoints=reportPoints;
+    settings.dataLimit=dataLimit;
+    settings.outputPath=outputPath;
+    settings.reportPointIndex=1;
+    settings.run=r;
+    settings.reguGammas=reguGammas;
+    settings.kernelParams=kernelParams;
+    
+    fprintf('Number of report points:%d',length(reportPoints))
     %we don't use validation here. We tune parameters on training data
     %(5-fold-crossvalidation)
-    res=run_experiment(train,train_class,test,test_class,[0.5],[0.01],[],nr_samples,interval,batch_size,report_points,method,data_limit,r,0,0,[],[],[])
-%res=run_experiment(train,train_class,test,test_class,nr_samples,interval,batch_size,report_points,method,data_limit,r)
+    res=runExperiment(settings,'lssvm');%res=run_experiment(train,train_class,test,test_class,nr_samples,interval,batch_size,report_points,method,data_limit,r)
     results{r}=res;
     %save intermediate results just in case
-    save(sprintf('%s/results.mat',output_path),'results');
-    avg_aucs=zeros(1,length(report_points));
-    avg_aucs_lssvm=zeros(1,length(report_points));
-
+    save(sprintf('%s/results.mat',outputPath),'results');
+    avgAucs=zeros(1,length(reportPoints));
+    realAvgAUCs=zeros(1,length(reportPoints));
     for i=1:r
-       avg_aucs=avg_aucs+results{i}.aucs;
-       all_aucs(i,:)=results{i}.aucs;
-       run_times(i,:)=results{i}.runtime+results{i}.tuning_time;
+        size(cell2mat(results{i}.selectedAUCs))
+        size(reportPoints)
+        avgAucs=avgAucs+cell2mat(results{i}.selectedAUCs);
+        realAvgAUCs=realAvgAUCs+cell2mat(results{i}.AUCs);
+        allAucs(i,:)=cell2mat(results{i}.selectedAUCs);
+        allRealAucs(i,:)=cell2mat(results{i}.AUCs);
+        runTimes(i,:)=results{i}.runtime+results{i}.tuningTime;
+        processingTimes(i,:)=results{i}.processingTimes;
     end
-    stdev=std(all_aucs);
-    avg_aucs=avg_aucs/r;
-    avg_runtime=mean(run_times);
-    std_runtime=std(run_times);
-    save(sprintf('%s/auc.mat',output_path),'avg_aucs','stdev','report_points','avg_runtime','std_runtime');
-%    plot_results(general_output,general_output)
+    stdev=std(allAucs);
+    stdevReal=std(allRealAucs);
+    avgAucs=avgAucs/nrRuns;
+    realAvgAUCs=realAvgAUCs/nrRuns;
+    avgRuntime=mean(runTimes);
+    stdRuntime=std(runTimes);
+    save(sprintf('%s/auc.mat',outputPath),'avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
 end
 
-avg_aucs=zeros(1,length(report_points));
-avg_aucs_lssvm=zeros(1,length(report_points));
-
-for i=1:nr_runs
-  avg_aucs=avg_aucs+results{i}.aucs;
-  all_aucs(i,:)=results{i}.aucs;
-  run_times(i,:)=results{i}.runtime+results{i}.tuning_time;
+avgAucs=zeros(1,length(reportPoints));
+realAvgAUCs=zeros(1,length(reportPoints));
+for i=1:nrRuns
+    avgAucs=avgAucs+cell2mat(results{i}.selectedAUCs);
+    realAvgAUCs=realAvgAUCs+cell2mat(results{i}.AUCs);
+    allAucs(i,:)=cell2mat(results{i}.selectedAUCs);
+    allRealAucs(i,:)=cell2mat(results{i}.AUCs);
+    runTimes(i,:)=results{i}.runtime+results{i}.tuningTime;
+    processingTimes(i,:)=results{i}.processingTimes;
 end
-stdev=std(all_aucs);
-avg_aucs=avg_aucs/nr_runs;
-avg_runtime=mean(run_times);
-std_runtime=std(run_times);
-%avg_aucs_lssvm=avg_aucs_lssvm/nr_runs;
-save(sprintf('%s/auc.mat',output_path),'avg_aucs','stdev','report_points','avg_runtime','std_runtime');
-save(sprintf('%s/results.mat',output_path),'results');
-%plot the result
-plot_results(general_output)
-%plot_data_imbalance(general_output,[1,2])
+stdev=std(allAucs);
+stdevReal=std(allRealAucs);
+avgAucs=avgAucs/nrRuns;
+realAvgAUCs=realAvgAUCs/nrRuns;
+avgRuntime=mean(runTimes);
+stdRuntime=std(runTimes);
+save(sprintf('%s/auc.mat',outputPath),'avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
+save(sprintf('%s/results.mat',outputPath),'results');
 end
 

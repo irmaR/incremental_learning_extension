@@ -1,3 +1,6 @@
-function [Xstandardized] = standardizeX(X)
+function [Xstandardized,minO,maxO] = standardizeX(X)
 % Standardize X using 0-1 scaling
-Xstandardized = (X - min(X(:)))/(max(X(:)) - min(X(:)));
+minO=min(X(:));
+maxO=max(X(:));
+Xstandardized = (X - minO )/( maxO- minO);
+

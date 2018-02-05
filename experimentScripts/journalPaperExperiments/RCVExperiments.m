@@ -53,9 +53,9 @@ for ns=1:length(NeighborModes)
                     trainClass=folds{r}.train_class;
                     testData=folds{r}.test;
                     testClass=folds{r}.test_class;
-                    %standardize the training and test data
-                    trainData=standardizeX(trainData);
-                    testData=standardizeX(testData);
+                    %standardize the training and test data        
+                    [trainData,min_train,max_train]=standardizeX(trainData);
+                    testData=standardize(testData,min_train,max_train);
                     %for each category in train class we run one learning/inference
                     %procedure. We calculate AUCs and we average then
                     fprintf('Number of training data points %d-%d, class %d\n',size(trainData,1),size(trainData,2),size(trainClass,1));

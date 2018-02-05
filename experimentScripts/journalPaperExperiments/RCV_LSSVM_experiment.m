@@ -22,8 +22,8 @@ for r=1:nr_runs
            test_class=folds{r}.test_class;
 
         %standardize the training and test data
-           train=standardizeX(train);
-           test=standardizeX(test);
+           [train,min_train,max_train]=standardizeX(train);
+           test=standardize(test,min_train,max_train);
 
         %for each category in train class we run one learning/inference
         %procedure. We calculate AUCs and we average then

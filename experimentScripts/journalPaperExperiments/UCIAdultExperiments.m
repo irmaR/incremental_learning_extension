@@ -20,7 +20,6 @@ for ns=1:length(NeighborModes)
             if ks(kNN)==0 && strcmp(WeightModes{ws},'Binary') && strcmp(NeighborModes{ns},'kNN')
                 continue
             end
-            generalOutput=sprintf('%s/smp_%d/bs_%d/%s/%s/k_%d/',pathToResults,numSelectSamples,batchSize,NeighborModes{ns},WeightModes{ws},ks(kNN));
             outputPath=sprintf('%s/smp_%d/bs_%d/%s/%s/k_%d/%s/',pathToResults,nrSamples,batchSize,NeighborModes{ns},WeightModes{ws},ks(kNN),method);
             fprintf('Making folder %s',outputPath)
             mkdir(outputPath)
@@ -47,7 +46,9 @@ for ns=1:length(NeighborModes)
             fprintf(fileID,'data_limit:%d \n',dataLimit);
             fprintf(fileID,'Using warping?:%d \n',warping);
             fprintf(fileID,'Using balancing?:%d \n',balanced);
-            for r=1:2
+            
+            
+            for r=1:nrRuns
                 s = RandStream('mt19937ar','Seed',r);
                 load(pathToData)
                 %shuffle the training data with the seed according to the run
@@ -56,27 +57,32 @@ for ns=1:length(NeighborModes)
                 train=train(ix(1:ceil(size(ix,1)*2/3)),:);
                 trainClass=train_class(ix(1:ceil(size(ix,1)*2/3),:));
                 %standardize the training and test data
-                train=standardizeX(train);
-                test=standardizeX(test);
+                [train,min_train,max_train]=standardizeX(train);
+                testData=standardize(test,min_train,max_train);
                 %this test dataset is pretty big so we will sample 1000 points in each
                 %run
-                ix=randperm(s,size(test,1))';
-                test=test(ix(1:1000),:);
+                ix=randperm(s,size(testData,1))';
+                testData=testData(ix(1:1000),:);
                 testClass=test_class(ix(1:1000),:);
+                trainClass(trainClass~=1)=-1;
+                trainClass(trainClass==2)=1;
+                testClass(testClass~=1)=-1;
+                testClass(testClass==2)=1;
+                
                 fprintf('Number of training data points %d-%d, class %d\n',size(train,1),size(train,2),size(train_class,1));
-                fprintf('Number of test data points %d-%d\n',size(test,1),size(test,2));
-                reportPoints=[numSelectSamples:batchSize:size(train,1)-batchSize]
+                fprintf('Number of test data points %d-%d\n',size(testData,1),size(testData,2));
+                reportPoints=[nrSamples:batchSize:size(train,1)-batchSize]
                 fprintf('Number of report points:%d',length(reportPoints))
                 %we don't use validation here. We tune parameters on training data
                 %(5-fold-crossvalidation)
                 settings.XTrain=train;
                 settings.YTrain=trainClass;
-                settings.XTest=test;
+                settings.XTest=testData;
                 settings.YTest=testClass;
                 settings.reguAlphaParams=reguAlphaParams;
                 settings.reguBetaParams=reguBetaParams;
                 settings.kernelParams=kernelParams;
-                settings.numSelectSamples=numSelectSamples;
+                settings.numSelectSamples=nrSamples;
                 settings.batchSize=batchSize;
                 settings.reportPoints=reportPoints;
                 settings.dataLimit=dataLimit;
@@ -85,39 +91,48 @@ for ns=1:length(NeighborModes)
                 settings.balanced=balanced;
                 settings.ks=ks(kNN);
                 settings.weightMode=WeightModes{ws};
-                settings.neighbourMode=NeighborModes{ns};               
-                res=runExperiment(settings,method);                
+                settings.neighbourMode=NeighborModes{ns};
+                res=runExperiment(settings,method);
                 results{r}=res;
                 %save intermediate results just in case
-                save(sprintf('%s/results.mat',output_path),'results');
-                avg_aucs=zeros(1,length(reportPoints));
-                avg_aucs_lssvm=zeros(1,length(reportPoints));
+                save(sprintf('%s/results.mat',outputPath),'results');
+                %save intermediate results just in case
+                avgAucs=zeros(1,length(reportPoints));
+                realAvgAUCs=zeros(1,length(reportPoints));
                 for i=1:r
-                    avg_aucs=avg_aucs+results{i}.aucs;
-                    all_aucs(i,:)=results{i}.aucs;
-                    run_times(i,:)=results{i}.runtime+results{i}.tuningTime;
+                    avgAucs=avgAucs+cell2mat(results{i}.selectedAUCs);
+                    realAvgAUCs=realAvgAUCs+cell2mat(results{i}.AUCs);
+                    allAucs(i,:)=cell2mat(results{i}.selectedAUCs);
+                    allRealAucs(i,:)=cell2mat(results{i}.AUCs);
+                    runTimes(i,:)=results{i}.runtime+results{i}.tuningTime;
+                    processingTimes(i,:)=results{i}.processingTimes;
                 end
-                stdev=std(all_aucs);
-                avg_aucs=avg_aucs/r;
-                avg_runtime=mean(run_times);
-                std_runtime=std(run_times);
-                save(sprintf('%s/auc.mat',output_path),'avg_aucs','stdev','reportPoints','avg_runtime','std_runtime');
-                %    plot_results(general_output,general_output)
+                stdev=std(allAucs);
+                stdevReal=std(allRealAucs);
+                avgAucs=avgAucs/nrRuns;
+                realAvgAUCs=realAvgAUCs/nrRuns;
+                avgRuntime=mean(runTimes);
+                stdRuntime=std(runTimes);
+                save(sprintf('%s/auc.mat',outputPath),'avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
             end
-            avg_aucs=zeros(1,length(reportPoints));
-            avg_aucs_lssvm=zeros(1,length(reportPoints));
+            avgAucs=zeros(1,length(reportPoints));
+            realAvgAUCs=zeros(1,length(reportPoints));
             for i=1:nrRuns
-                avg_aucs=avg_aucs+results{i}.aucs;
-                all_aucs(i,:)=results{i}.aucs;
-                run_times(i,:)=results{i}.runtime+results{i}.tuningTime;
+                avgAucs=avgAucs+cell2mat(results{i}.selectedAUCs);
+                realAvgAUCs=realAvgAUCs+cell2mat(results{i}.AUCs);
+                allAucs(i,:)=cell2mat(results{i}.selectedAUCs);
+                allRealAucs(i,:)=cell2mat(results{i}.AUCs);
+                runTimes(i,:)=results{i}.runtime+results{i}.tuningTime;
+                processingTimes(i,:)=results{i}.processingTimes;
             end
-            stdev=std(all_aucs);
-            avg_aucs=avg_aucs/nrRuns;
-            avg_runtime=mean(run_times);
-            std_runtime=std(run_times);           
-            save(sprintf('%s/auc.mat',output_path),'avg_aucs','stdev','reportPoints','avg_runtime','std_runtime');
-            save(sprintf('%s/results.mat',output_path),'results');
-
+            stdev=std(allAucs);
+            stdevReal=std(allRealAucs);
+            avgAucs=avgAucs/nrRuns;
+            realAvgAUCs=realAvgAUCs/nrRuns;
+            avgRuntime=mean(runTimes);
+            stdRuntime=std(runTimes);
+            save(sprintf('%s/auc.mat',outputPath),'avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
+            save(sprintf('%s/results.mat',outputPath),'results');
         end
     end
 end

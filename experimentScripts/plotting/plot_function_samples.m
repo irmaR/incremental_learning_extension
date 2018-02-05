@@ -1,23 +1,6 @@
 function []=plot_function_samples(path_to_results,title_text)
 samples=[10,20,40,60,80,100];
 bs=100;
-%avg_aucs_inct=[];
-%std_aucs_inct=[];
-
-%avg_aucs_rnd=[];
-%std_aucs_rnd=[];
-
-%avg_runtime_inct=[];
-%std_runtime_inct=[];
-
-%avg_runtime_rnd=[];
-%std_runtime_rnd=[];
-
-%avg_aucs_inct=zeros(length(samples),length(report_points.report_points));
-%avg_aucs_rnd=zeros(length(samples),length(report_points.report_points));
-%std_aucs_inct=zeros(length(samples),length(report_points.report_points));
-%std_aucs_rnd=zeros(length(samples),length(report_points.report_points));
-
 
 
 for i=1:length(samples)
@@ -81,23 +64,6 @@ h=[b];
 lgd = legend(h,'incr @T3','incr @T2','incr @T1','random')
 lgd.FontSize = 30;
 lgd.Location = 'southeast';
-% avg_runtimes_inct
-% avg_runtimes_batch
-% fig = figure('visible', 'off');
-% %fig = figure
-% colorVec = hsv(3);
-% hold on;
-% xlabel('#selected samples','FontSize',20)
-% ylabel('Runtime (seconds)','FontSize',20)
-% errorbar(samples,avg_runtimes_inct,std_runtimes_inct,'LineWidth',5,'Color',colorVec(1,:))
-% errorbar(samples,avg_runtimes_batch,std_runtimes_batch,'LineWidth',5,'Color',colorVec(2,:))
-% set(gca,'yscale','log')
-% set(gca,'FontSize',20)
-% title(title_text)
-% xlim([samples(1) samples(length(samples))]);
-% legendInfo{1} = ['incr'];
-% legendInfo{2} = ['batch'];
-% legend(legendInfo);
-% hold off;
+
 
 end
