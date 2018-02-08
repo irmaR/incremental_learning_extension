@@ -1,6 +1,6 @@
 function [resAUC,resSTD]= getAUCTable(pathToResults,samplesN,batchSize,approaches,specificResult,outputPath)
 aucs=containers.Map('KeyType','int32','ValueType','Any')
-approaches_order={'SRKDA','iSRKDA','SRDA','iSRDA','lssvm'}
+approaches_order={'SRKDA','iSRKDA','SRDA','iSRDA','lssvm','random'}
 counter=1;
 for i=1:length(samplesN)
   apprAuc={};
@@ -36,34 +36,29 @@ resAUC=containers.Map('KeyType','char','ValueType','Any')
 resSTD=containers.Map('KeyType','char','ValueType','Any')
 latexBottom=sprintf('%s\n%s\n%s\n','\end{tabular}','\end{center}','\end{table}')
 
-
-
 for j=1:length(approaches)
 approachAUC={};
 approachStdev={};
     for i=1:length(samplesN)
     results=aucs(samplesN(i));
     apprRes=results{j};
+    sprintf('here')
     apprRes.auc
+    apprRes.stdev
     approachAUC{i}=sprintf('%.0f',apprRes.auc*100);
-    approachStdev{i}=sprintf('%.0f',apprRes.stdev*100);
+    approachStdev{i}=sprintf('%.1f',apprRes.stdev*100);
     end
 resAUC(approaches{j})=approachAUC;
 resSTD(approaches{j})=approachStdev;
 end
 latexEntries={}
-for j=1:length(approaches_order)
-    if isKey(resAUC,approaches_order{j})
-       aucs=resAUC(approaches_order{j})
-       stds=resSTD(approaches_order{j})
-       size(approaches_order{j})
-       
-       approaches_order{j}
-       sprintf('\multicolumn{1}{c}{%s}&%d$\pm$%d&%d$\pm$%d&%d$\pm$%d&%d$\pm$%f*&%f$\pm$%f\\')
-       latexEntries{j}=sprintf('\multicolumn{1}{c}{%s}&%d$\pm$%d&%d$\pm$%d&%d$\pm$%d&%d$\pm$%f*&%f$\pm$%f\\',approaches_order{j},aucs(1),stds(1),aucs(2),stds(2),aucs(3),std(3),aucs(4),stds(4),aucs(5),stds(5))
-       
+resAUC.keys()
 
-    end
-end
-
+ for j=1:length(approaches_order)
+     if isKey(resAUC,approaches_order{j})
+        aucs=resAUC(approaches_order{j});
+        stds=resSTD(approaches_order{j});
+        sprintf('\\multicolumn{1}{c}{%s}&%s$\\pm$%s&%s$\\pm$%s&%s$\\pm$%s&%s$\\pm$%s&%s$\\pm$%s&%s$\\pm$%s\\',approaches_order{j},char(aucs(1)),char(stds(1)),char(aucs(2)),char(stds(2)),char(aucs(3)),char(stds(3)),char(aucs(4)),char(stds(4)),char(aucs(5)),char(stds(5)))
+     end
+ end
 end

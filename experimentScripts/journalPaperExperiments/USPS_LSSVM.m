@@ -1,4 +1,4 @@
-function []=USPS_LSSVM_experiment(pathToData,pathToResults,pathToCode,nrRuns,nrSamples,batchSize,dataLimit,reguGammas,kernelParams)
+function []=USPS_LSSVM(pathToData,pathToResults,pathToCode,nrRuns,nrSamples,batchSize,dataLimit,reguGammas,kernelParams)
 %USPS mat contains train,train_class,test and test_class
 %we use one vs all strategy
 addpath(genpath(pathToCode))
