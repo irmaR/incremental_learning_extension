@@ -6,19 +6,18 @@ for i=1:length(samplesN)
   apprAuc={};
   samplesN(i)
   for j=1:length(approaches)
-      approaches{j}
-      strcmp(approaches{j},'lssvm')
       if strcmp(approaches{j},'lssvm')
-           paths=sprintf('%s/smp_%d/bs_%d/%s/auc.mat',pathToResults,samplesN(i),batchSize,approaches{j})
+           paths=sprintf('%s/smp_%d/bs_%d/%s/auc.mat',pathToResults,samplesN(i),batchSize,approaches{j});
       else
-           paths=sprintf('%s/smp_%d/bs_%d/%s/%s/auc.mat',pathToResults,samplesN(i),batchSize,specificResult,approaches{j})
+           paths=sprintf('%s/smp_%d/bs_%d/%s/%s/auc.mat',pathToResults,samplesN(i),batchSize,specificResult,approaches{j});
       end
+      sprintf('PATH: %s',paths),exist(paths, 'file')
       if exist(paths, 'file')
           auc=load(paths);
-          avgAUCs=auc.avgAucs;
+          avgAUCs=auc.avgAucs
           stdev=auc.stdev;
           res.appr=approaches{j};
-          res.auc=avgAUCs(end);
+          res.auc=avgAUCs(end)
           res.stdev=stdev(end);
           res.sampleN=samplesN(i);
       else
@@ -32,9 +31,9 @@ for i=1:length(samplesN)
   aucs(samplesN(i))=apprAuc;  
 end
 latexHeader=sprintf('%s\n%s\n%s\n%s\n','\begin{table}[htp!]','\begin{center}','\begin{tabular}{r|llllll}','\multicolumn{1}{c}{Approach}& \multicolumn{1}{c|}{20} & \multicolumn{1}{c}{40} & \multicolumn{1}{c}{60} & \multicolumn{1}{c}{80} & \multicolumn{1}{c}{100}\\')
-resAUC=containers.Map('KeyType','char','ValueType','Any')
-resSTD=containers.Map('KeyType','char','ValueType','Any')
-latexBottom=sprintf('%s\n%s\n%s\n','\end{tabular}','\end{center}','\end{table}')
+resAUC=containers.Map('KeyType','char','ValueType','Any');
+resSTD=containers.Map('KeyType','char','ValueType','Any');
+latexBottom=sprintf('%s\n%s\n%s\n','\end{tabular}','\end{center}','\end{table}');
 
 for j=1:length(approaches)
 approachAUC={};
@@ -42,17 +41,14 @@ approachStdev={};
     for i=1:length(samplesN)
     results=aucs(samplesN(i));
     apprRes=results{j};
-    sprintf('here')
-    apprRes.auc
-    apprRes.stdev
     approachAUC{i}=sprintf('%.0f',apprRes.auc*100);
     approachStdev{i}=sprintf('%.1f',apprRes.stdev*100);
     end
 resAUC(approaches{j})=approachAUC;
 resSTD(approaches{j})=approachStdev;
 end
-latexEntries={}
-resAUC.keys()
+latexEntries={};
+resAUC.keys();
 
  for j=1:length(approaches_order)
      if isKey(resAUC,approaches_order{j})

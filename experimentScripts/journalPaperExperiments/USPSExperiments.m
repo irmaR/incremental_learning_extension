@@ -47,7 +47,6 @@ for ns=1:length(NeighborModes)
             fprintf(fileID,'Using balancing?:%d \n',balanced);
             reportPoints=[nrSamples:batchSize:8400];
             for r=1:nrRuns
-                aucs=[];
                 tuningTime=[];
                 runtime=[];
                 res=[];
@@ -87,31 +86,32 @@ for ns=1:length(NeighborModes)
                     settings.ks=ks(kNN);
                     settings.outputPath=outputPath;                   
                     settings.reportPointIndex=1;                    
-                    res1=runExperiment(settings,method)                   
+                    res1=runExperiment(settings,method)       
                     selectedAUCs(c,:)=cell2mat(res1.selectedAUCs);
                     realAUCs(c,:)=cell2mat(res1.AUCs);
                     tuningTime(c,:)=res1.tuningTime;
                     runtime(c,:)=res1.runtime;
                     processingTime(c,:)=res1.processingTimes;
                 end
-                res.avgAUCs=mean(selectedAUCs);
-                res.avgRealAUCs=mean(realAUCs);
-                res.stdevRealAucs=std(realAUCs);
-                res.stdevAucs=std(selectedAUCs);
+                res.avgAUCs=nanmean(selectedAUCs);
+                res.avgRealAUCs=nanmean(realAUCs);
+                res.stdevRealAucs=nanstd(realAUCs);
+                res.stdevAucs=nanstd(selectedAUCs);
                 res.reportPoints=reportPoints;
-                res.tuningTime=mean(tuningTime);
-                res.stdevTuningTime=std(tuningTime);
-                res.runtime=mean(runtime);
-                res.stdevRuntime=std(runtime);
-                res.processingTime=mean(processingTime);
-                res.avgRuntime=mean(runtime);
-                res.stdRuntime=std(runtime);
+                res.tuningTime=nanmean(tuningTime);
+                res.stdevTuningTime=nanstd(tuningTime);
+                res.runtime=nanmean(runtime);
+                res.stdevRuntime=nanstd(runtime);
+                res.processingTime=nanmean(processingTime);
+                res.avgRuntime=nanmean(runtime);
+                res.stdRuntime=nanstd(runtime);
                 save(sprintf('%s/res.mat',outputPath),'res');
                 results{r}=res;
             end
             avgAucs=zeros(1,length(reportPoints));
             realAvgAUCs=zeros(1,length(reportPoints));
             for i=1:nrRuns
+                results{i}.avgAUCs
                 avgAucs=avgAucs+results{i}.avgAUCs;               
                 realAvgAUCs=realAvgAUCs+results{i}.avgRealAUCs;
                 allAucs(i,:)=results{i}.avgAUCs;
@@ -119,12 +119,12 @@ for ns=1:length(NeighborModes)
                 runTimes(i,:)=results{i}.runtime+results{i}.tuningTime;
                 processingTimes(i,:)=results{i}.processingTime;
             end
-            stdev=std(allAucs);
-            stdevReal=std(allRealAucs);
+            stdev=nanstd(allAucs);
+            stdevReal=nanstd(allRealAucs);
             avgAucs=avgAucs/nrRuns;
             realAvgAUCs=realAvgAUCs/nrRuns;
-            avgRuntime=mean(runTimes);
-            stdRuntime=std(runTimes);
+            avgRuntime=nanmean(runTimes);
+            stdRuntime=nanstd(runTimes);
             save(sprintf('%s/auc.mat',outputPath),'avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
             save(sprintf('%s/results.mat',outputPath),'results');
         end
