@@ -45,7 +45,7 @@ for ns=1:length(NeighborModes)
             fprintf(fileID,'data_limit:%d \n',dataLimit);
             fprintf(fileID,'Using warping?:%d \n',warping);
             fprintf(fileID,'Using balancing?:%d \n',balanced);
-            reportPoints=[nrSamples:batchSize:(8400-batchSize-nrSamples)];
+            reportPoints=[nrSamples:batchSize:(8400-batchSize)];
             for r=1:nrRuns
                 tuningTime=[];
                 runtime=[];
