@@ -1,6 +1,4 @@
 function [output_path]=highMassPhysicsExperimenttraining(method,run,shuffleSeedValidation,validationOffset,fidTrain,fidTest,fidIndicesTrain,fidIndicesTest,pathToResults,pathToCode,numSelectSamples,batchSize,dataLimit,warping,balanced,betas,alphas,kernels)
-%USPS mat contains train,train_class,test and test_class
-%we use one vs all strategy
 NeighborModes='Supervised';
 WeightModes='HeatKernel'
 ks=0;
@@ -74,10 +72,10 @@ shuffledTest=fidIndicesTest(ix',:);
 
 settings.indicesOffsetTrain=fidIndicesTrain(1:nrTrain);
 settings.XTrainFileID=fidTrain;
-settings.formattingString='%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f';
+settings.formattingString='%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f';
 settings.delimiter=',';
 
-[testData,testClass]=getDataInstancesSequential(fidTest,settings.formattingString,settings.delimiter,shuffledTest(1:2000));
+[testData,testClass]=getDataInstancesSequential(fidTest,settings.formattingString,settings.delimiter,shuffledTest(1:1000));
 %but train data is loaded sequentially and we only have indices for
 %that
 

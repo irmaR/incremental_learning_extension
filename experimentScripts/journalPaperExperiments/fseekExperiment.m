@@ -1,4 +1,4 @@
-fid=fopen('/Users/irma/Documents/MATLAB/DATA/HighMassPhysics/test.csv');
+fid=fopen('/home/irma/work/DATA/HEPMASS/1000000_reduced/1000000_train.csv');
 arrayofOffsets=[];
 lineNumber=1;
 id=ftell(fid);
@@ -15,13 +15,13 @@ while 1
     id=ftell(fid);
     lineNumber=lineNumber+1;
 end
-save('/Users/irma/Documents/MATLAB/DATA/HighMassPhysics/DummyoffsetIndices.mat','arrayofOffsets');
+save('/home/irma/work/DATA/HEPMASS/1000000_reduced/1000000_train_offset.mat','arrayofOffsets');
 %test see if we are getting the right indices
-for k=1:size(arrayofOffsets)
-   fseek(fid, arrayofOffsets(k), 'bof');
+%for k=1:size(arrayofOffsets)
+%   fseek(fid, arrayofOffsets(k), 'bof');
    %tline = fgetl(fid)
-   out=cell2mat(textscan(fid, '%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f', 1, 'delimiter',','));
-end
-fseek(fid, arrayofOffsets(3), 'bof')
-out=cell2mat(textscan(fid, '%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f', 1, 'delimiter',','))
-fclose(fid); 
+%   out=cell2mat(textscan(fid, '%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f', 1, 'delimiter',','));
+%end
+%fseek(fid, arrayofOffsets(3), 'bof')
+%out=cell2mat(textscan(fid, '%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f', 1, 'delimiter',','))
+%fclose(fid); 

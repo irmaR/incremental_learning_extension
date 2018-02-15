@@ -1,10 +1,4 @@
 function [outputPath]=highMassRandom(fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,runs,validationOffset,numSelectSamples,batchSize,dataLimit)
-%fidTrain='/Users/irma/Documents/MATLAB/DATA/HighMassPhysics/train/all_train.csv';
-%fidTest='/Users/irma/Documents/MATLAB/DATA/HighMassPhysics/test/all_test.csv';
-%offsetTrain='/Users/irma/Documents/MATLAB/DATA/HighMassPhysics/offsetIndices.mat';
-%offsetTest='/Users/irma/Documents/MATLAB/DATA/HighMassPhysics/offsetIndicesTest.mat';
-%output='/Users/irma/Documents/MATLAB/RESULTS/Test/HighMassNoMass/samples10000/';
-%codePath='/Users/irma/Documents/MATLAB/CODE_local/incremental_learning_extension';
 
 shuffleSeedValidation=1000;
 outputPath=sprintf('%s/smp_%d/bs_%d/',output,numSelectSamples,batchSize);
