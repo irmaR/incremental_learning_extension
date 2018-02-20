@@ -3,15 +3,15 @@ NeighborModes='Supervised';
 WeightModes='HeatKernel'
 ks=0;
 
-addpath(genpath(pathToCode));
+addpath(genpath(pathToCode))
 
 reguBetaParams=betas;
 reguAlphaParams=alphas;
 kernelParams=kernels;
 output_path=sprintf('%s/%s/run%d/',pathToResults,method,run);
-fprintf('Making folder %s',output_path);
-mkdir(output_path);
-param_info=sprintf('%s/params.txt',output_path);
+fprintf('Making folder %s',output_path)
+mkdir(output_path)
+param_info=sprintf('%s/params.txt',output_path)
 fileID = fopen(param_info,'w');
 fprintf(fileID,'Beta params=: ');
 for i=1:length(reguBetaParams)
@@ -38,11 +38,12 @@ fprintf(fileID,'Using balancing?:%d \n',balanced);
 fidTrain=fopen(fidTrain);
 fidIndicesTrain=load(fidIndicesTrain);
 fidIndicesTrain=fidIndicesTrain.arrayofOffsets;
-size(fidIndicesTrain,1)
+
 %shuffle the array according to the validation seed
 sVal=RandStream('mt19937ar','Seed',shuffleSeedValidation);
 ix=randperm(sVal,size(fidIndicesTrain,1));
 fidIndicesTrain=fidIndicesTrain(ix((validationOffset+1):end)',:);
+
 %shuffle the array according to the run seed
 s = RandStream('mt19937ar','Seed',run);
 ix=randperm(s,size(fidIndicesTrain,1));
@@ -51,11 +52,11 @@ fidIndicesTrain=fidIndicesTrain(ix',:);
 
 
 nrTrain=size(fidIndicesTrain,1);
-batchReport=30;
+batchReport=10000;
 
 settings.initSample=[];
 settings.initClass=[];
-reportPoints=[numSelectSamples:batchReport:nrTrain];
+reportPoints=[numSelectSamples:batchReport:nrTrain,nrTrain]
 settings.reportPointIndex=1;
 
 %get Test offset indices
@@ -69,12 +70,16 @@ shuffledTest=fidIndicesTest(ix',:);
 
 settings.indicesOffsetTrain=fidIndicesTrain(1:nrTrain);
 settings.XTrainFileID=fidTrain;
-settings.formattingString='%s%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f';
+settings.formattingString='%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f';
 settings.delimiter=',';
 
-settings.indicesOffsetTest=fidIndicesTest;
-settings.XTestFileID=fidTest;
-settings.read_size_test=400;
+[testData,testClass]=getDataInstancesSequential(fidTest,settings.formattingString,settings.delimiter,shuffledTest(1:1000));
+t = datastore('/home/irma/work/DATA/HEPMASS/1000000_reduced/1000_test_reduced.csv');
+
+
+
+settings.XTest=testData;
+settings.YTest=testClass;
 settings.reguAlphaParams=reguAlphaParams;
 settings.reguBetaParams=reguBetaParams;
 settings.kernelParams=kernelParams;

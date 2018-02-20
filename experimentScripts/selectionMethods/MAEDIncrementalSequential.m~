@@ -42,7 +42,7 @@ results.trainAUCs{point}=aucTrain;
 results.realBetas{point}=values;
 results.selectedBetas{point}=values;
 results.percentageRemoved{point}=0;
-point=point+1;
+%point=point+1;
 batch=settings.batchSize;
 pointerObs=settings.numSelectSamples;
 while 1
@@ -50,9 +50,6 @@ while 1
     %if pointerObs>=size(settings.indicesOffsetTrain,1)  %----------------------------------- REMOVE THIS!!!!
     %    batch=size(settings.indicesOffsetTrain,1)-pointerObs;
     %end
-    if pointerObs>=size(settings.indicesOffsetTrain,1)
-        break
-    end
     fprintf('BATCH size: %d\n',batch);
     [XNew,YNew]=getDataInstancesSequential(settings.XTrainFileID,settings.formattingString,settings.delimiter,settings.indicesOffsetTrain(pointerObs+1:pointerObs+batch));
     fprintf('Size of new block %d\t, Reached %d\n',size(XNew,1),pointerObs);
@@ -83,12 +80,21 @@ while 1
         model=newModel;
     end
     
+    if point+`
+    if pointerObs>settings.reportPoints(point+1)
+        results.reportPointIndex=point;
+        point=point+1;
+    end
+    
+     settings.reportPoints
+    pointerObs
+    point
+    settings.reportPoints(point)
+    point<=length(settings.reportPoints)
+    pointerObs<=settings.reportPoints(point)
     
     
-    
-    
-    
-    if point<=length(settings.reportPoints)
+    if point<=length(settings.reportPoints) && (pointerObs<=settings.reportPoints(point))
         sprintf('HERE')
         results.selectedDataPoints{point}=model.X;
         results.selectedLabels{point}=model.Y;
@@ -112,28 +118,12 @@ while 1
         results.reportPoints=settings.reportPoints;
         results.reportPointIndex=results.reportPointIndex;
         save(sprintf('%s/results.mat',settings.outputPath),'results');
-        
+        if pointerObs>=size(settings.indicesOffsetTrain,1)
+            break
+        end
         pointerObs=pointerObs+batch;
     end
     
-    settings.reportPoints
-    pointerObs
-    point
-    settings.reportPoints(point)
-    point<=length(settings.reportPoints)
-    pointerObs<=settings.reportPoints(point)
-    
-    if point+1<=length(settings.reportPoints)
-        if pointerObs+batch>=settings.reportPoints(point+1)
-            results.reportPointIndex=point;
-            point=point+1;
-        end
-    else
-        if pointerObs+batch>=settings.reportPoints(point)
-            results.reportPointIndex=point;
-            point=point+1;
-        end
-    end
     
 end
 end

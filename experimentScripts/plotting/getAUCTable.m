@@ -49,7 +49,6 @@ resSTD(approaches{j})=approachStdev;
 end
 latexEntries={};
 resAUC.keys();
-
  for j=1:length(approaches_order)
      if isKey(resAUC,approaches_order{j})
         aucs=resAUC(approaches_order{j});

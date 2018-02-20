@@ -38,8 +38,8 @@ options.ReguAlpha = reguAlpha;
 options.k=settings.ks;
 options.WeightMode=settings.weightMode;
 options.NeighborMode=settings.neighbourMode;
-options.test=settings.XTest;
-options.test_class=settings.YTest;
+%options.test=settings.XTest;
+%options.test_class=settings.YTest;
 %measure time
 tic;
 fprintf('Running the learning...')
