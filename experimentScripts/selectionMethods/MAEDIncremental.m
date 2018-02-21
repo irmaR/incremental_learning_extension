@@ -15,11 +15,12 @@ results.selectedBetas=cell(1, nrObsPoints);
 results.realBetas=cell(1, nrObsPoints);
 results.percentageRemoved=cell(1,nrObsPoints);
 
-ix=randperm(size(settings.XTrain,1));
-trainFea=settings.XTrain(ix,:);
-trainClass=settings.YTrain(ix,:);
+%ix=randperm(size(settings.XTrain,1));
+trainFea=settings.XTrain;
+trainClass=settings.YTrain;
 model.X=trainFea(1:settings.numSelectSamples,:);
 model.Y=trainClass(1:settings.numSelectSamples,:);
+sprintf('Initial observed %d',size(model.X,1))
 point=1;
 [model,values] = MAED(model,settings.numSelectSamples,options);
 %save current point
@@ -56,9 +57,10 @@ for j=0:settings.batchSize:(size(trainFea,1)-settings.numSelectSamples-settings.
     end
     %keep the new model if it improves the auc
     area=inferenceType(newModel.K,newModel.X,newModel.Y,options.test,options.test_class,options);
-    areaTrain=inferenceType(newModel.K,newModel.X,newModel.Y,newModel.X,newModel.Y,options);
+    %areaTrain=inferenceType(newModel.K,newModel.X,newModel.Y,newModel.X,newModel.Y,options);
     area=max(area,1-area);
-    areaTrain=max(areaTrain,1-areaTrain);
+    areaTrain=-1;
+    %areaTrain=max(areaTrain,1-areaTrain);
     %area=run_inference(kernel,current_sample,current_labels,options.test,options.test_class,options);
     if area<current_area
         model=oldModel;

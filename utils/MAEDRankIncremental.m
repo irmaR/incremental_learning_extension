@@ -9,9 +9,9 @@ function [model] = MAEDRankIncremental(model,XNew,YNew,numSamples,options)
 %   version 1.0 --Aug/2008
 %
 %   Written by Deng Cai (dengcai AT gmail.com)
-model.D=updateEuclidDist(model.X,model.D,XNew);
-model.K = constructKernelIncremental(model.D,options);
 
+model.D=updateEuclidDist(model.X,model.D,XNew);
+model.K = constructKernelIncremental(model.D,options); %---------- BRING
 %add new points to the sample
 indexCutoff=size(model.X,1);
 model.X=[model.X;XNew];
@@ -19,6 +19,13 @@ model.Y=[model.Y;YNew];
 sizeAugmentedSample=size(model.X,1);
 nSmp = size(model.X,1);
 splitLabel = false(nSmp,1);
+if isfield(options,'splitLabel')
+    splitLabel = options.splitLabel;
+end
+
+if isfield(options,'warping')
+    options.gnd=model.Y;
+end
 
 if isfield(options,'ReguBeta') && options.ReguBeta > 0
     if isfield(options,'W')
@@ -27,25 +34,29 @@ if isfield(options,'ReguBeta') && options.ReguBeta > 0
         if isfield(options,'k')
             Woptions.k = options.k;
         else
-            Woptions.k = 0;
+            Woptions.k = 5;
         end
         
-        Woptions.bLDA=options.bLDA;
-        Woptions.t = options.t;
-        Woptions.NeighborMode = options.NeighborMode ;
-        Woptions.gnd = model.Y ;
-        Woptions.WeightMode = options.WeightMode  ;
+        tmpD = model.D;
+        Woptions.t = mean(mean(tmpD));
+        if isfield(options,'gnd')
+            Woptions.WeightMode = 'HeatKernel';
+            Woptions.NeighborMode='Supervised';
+            Woptions.bLDA=options.bLDA;
+            Woptions.gnd=options.gnd;
+        end
         W = constructW(model.X,Woptions);
     end
     D = full(sum(W,2));
     L = spdiags(D,0,nSmp,nSmp)-W;
     K=(speye(size(model.K,1))+options.ReguBeta*model.K*L)\model.K;
-    model.K = max(K,K');
+    K = max(K,K');
 end
 
 if ~isfield(options,'Method')
     options.Method = 'Seq';
 end
+
 ReguAlpha = 0.01;
 if isfield(options,'ReguAlpha')
     ReguAlpha = options.ReguAlpha;

@@ -62,7 +62,6 @@ xlabel('#selected samples')
 ylabel('Runtime (seconds)')
 mean_aucs={}
 std_aucs={}
-stdevs
 for i=1:counter
       %errorbar(report_points.report_points,results{1,i}.avg_aucs,stdevs{1,i}.stdev)
       plot(report_points.report_points,results{1,i}.avg_runtime,'LineWidth',2,'Color',colorVec(i,:))

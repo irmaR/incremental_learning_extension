@@ -66,6 +66,7 @@ end
 
 
 [K,Dist,options] = constructKernel(model.X,[],options);
+fprintf('Kernel size: batch:%d',size(K,1));
 if isfield(options,'warping')
     options.gnd=model.Y;
 end

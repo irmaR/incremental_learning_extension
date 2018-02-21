@@ -14,9 +14,9 @@ results.selectedBetas=cell(1, nrObsPoints);
 results.realBetas=cell(1, nrObsPoints);
 results.percentageRemoved=cell(1,nrObsPoints);
 
-ix=randperm(size(settings.XTrain,1));
-trainFea=settings.XTrain(ix,:);
-trainClass=settings.YTrain(ix,:);
+%ix=randperm(size(settings.XTrain,1));
+trainFea=settings.XTrain;
+trainClass=settings.YTrain;
 model.X=trainFea(1:settings.numSelectSamples,:);
 model.Y=trainClass(1:settings.numSelectSamples,:);
 point=1;
@@ -43,9 +43,11 @@ results.percentageRemoved{point}=0;
 
 point=point+1;
 
-for j=0:settings.batchSize:(size(settings.XTrain,1)-settings.numSelectSamples-settings.batchSize)
+for j=0:settings.batchSize:(size(trainFea,1)-settings.numSelectSamples-settings.batchSize)
     starting_count1=tic;
-    %fprintf('Fetching %d - %d\t Batch %d\n',settings.numSelectSamples+j+1,settings.numSelectSamples+j+settings.batchSize,j)
+    fprintf('Fetching %d - %d\t Batch %d\n',settings.numSelectSamples+j+1,settings.numSelectSamples+j+settings.batchSize,j)
+    %XObserved=trainFea(settings.numSelectSamples+j+1:settings.numSelectSamples+j+settings.batchSize,:);
+    %YObserved=trainClass(settings.numSelectSamples+j+1:settings.numSelectSamples+j+settings.batchSize,:);    
     XObserved=trainFea(1:settings.numSelectSamples+j+settings.batchSize,:);
     YObserved=trainClass(1:settings.numSelectSamples+j+settings.batchSize,:);
     nObs=size(XObserved,1);
@@ -54,7 +56,7 @@ for j=0:settings.batchSize:(size(settings.XTrain,1)-settings.numSelectSamples-se
         XObserved=XObserved(ix(1:settings.dataLimit),:);
         YObserved=YObserved(ix(1:settings.dataLimit),:);
     end
-    fprintf('Number of observed (+ data limit) %d out of %d\n',size(XObserved,1),nObs)
+    %fprintf('Number of observed (+ data limit) %d out of %d\n',size(XObserved,1),nObs)
     oldModel=model;
     if settings.balanced
         newModel=batchUpdateModelBalanced(model,options,XObserved,YObserved,settings.numSelectSamples);

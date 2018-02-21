@@ -100,36 +100,36 @@ for ns=1:length(NeighborModes)
                 avgAucs=zeros(1,length(reportPoints));
                 realAvgAUCs=zeros(1,length(reportPoints));
                 for i=1:r
-                    avgAucs=avgAucs+cell2mat(results{i}.selectedAUCs);
-                    realAvgAUCs=realAvgAUCs+cell2mat(results{i}.AUCs);
+                    avgAucs(i,:)=cell2mat(results{i}.selectedAUCs);
+                    realAvgAUCs(i,:)=cell2mat(results{i}.AUCs);
                     allAucs(i,:)=cell2mat(results{i}.selectedAUCs);
                     allRealAucs(i,:)=cell2mat(results{i}.AUCs);
                     runTimes(i,:)=results{i}.runtime+results{i}.tuningTime;
                     processingTimes(i,:)=results{i}.processingTimes;
                 end
-                stdev=std(allAucs);
-                stdevReal=std(allRealAucs);
-                avgAucs=avgAucs/nrRuns;
+                stdev=nanstd(allAucs);
+                stdevReal=nanstd(allRealAucs);
+                avgAucs=nanmean(avgAucs);
                 realAvgAUCs=realAvgAUCs/nrRuns;
-                avgRuntime=mean(runTimes);
-                stdRuntime=std(runTimes);
+                avgRuntime=nanmean(runTimes);
+                stdRuntime=nanstd(runTimes);
                 save(sprintf('%s/auc.mat',outputPath),'avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
             end
             avgAucs=zeros(1,length(reportPoints));
             realAvgAUCs=zeros(1,length(reportPoints));
             for i=1:nrRuns
-                avgAucs=avgAucs+cell2mat(results{i}.selectedAUCs);
-                realAvgAUCs=realAvgAUCs+cell2mat(results{i}.AUCs);
+                avgAucs(i,:)=cell2mat(results{i}.selectedAUCs);
+                realAvgAUCs(i,:)=cell2mat(results{i}.AUCs);
                 allAucs(i,:)=cell2mat(results{i}.selectedAUCs);
                 allRealAucs(i,:)=cell2mat(results{i}.AUCs);
                 runTimes(i,:)=results{i}.runtime+results{i}.tuningTime;
                 processingTimes(i,:)=results{i}.processingTimes;
             end
-            stdev=std(allAucs);
-            stdevReal=std(allRealAucs);
-            avgAucs=avgAucs/nrRuns;
-            realAvgAUCs=realAvgAUCs/nrRuns;
-            avgRuntime=mean(runTimes);
+            stdev=nanstd(allAucs);
+            stdevReal=nanstd(allRealAucs);
+            avgAucs=nanmean(avgAucs);
+            realAvgAUCs=nanmean(realAvgAUCs);
+            avgRuntime=nanmean(runTimes);
             stdRuntime=std(runTimes);
             save(sprintf('%s/auc.mat',outputPath),'avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
             save(sprintf('%s/results.mat',outputPath),'results');

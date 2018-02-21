@@ -381,7 +381,6 @@ if strcmpi(options.NeighborMode,'KNN') && (options.k > 0)
                 end
             else
                 smpIdx = (i-1)*BlockSize+1:i*BlockSize;
-            
                 dist = EuDist2(fea(smpIdx,:),fea,0);
                 
                 if bSpeed
