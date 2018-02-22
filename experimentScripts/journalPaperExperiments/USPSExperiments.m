@@ -55,6 +55,10 @@ for ns=1:length(NeighborModes)
                     trainClass=folds{r}.train_class;
                     testData=folds{r}.test;
                     testClass=folds{r}.test_class;
+                    s = RandStream('mt19937ar','Seed',r);
+                    ix=randperm(s,size(trainData,1))';
+                    trainData=trainData(ix,:);
+                    trainClass=trainClass(ix,:);
                     %standardize the training and test data
                     trainData=standardizeX(trainData);
                     testData=standardizeX(testData);

@@ -20,7 +20,6 @@ trainFea=settings.XTrain;
 trainClass=settings.YTrain;
 model.X=trainFea(1:settings.numSelectSamples,:);
 model.Y=trainClass(1:settings.numSelectSamples,:);
-sprintf('Initial observed %d',size(model.X,1))
 point=1;
 [model,values] = MAED(model,settings.numSelectSamples,options);
 %save current point
@@ -50,6 +49,7 @@ for j=0:settings.batchSize:(size(trainFea,1)-settings.numSelectSamples-settings.
     XNew=trainFea(settings.numSelectSamples+j+1:settings.numSelectSamples+j+settings.batchSize,:);
     YNew=trainClass(settings.numSelectSamples+j+1:settings.numSelectSamples+j+settings.batchSize,:);
     oldModel=model;
+    
     if settings.balanced
         newModel=incrementalUpdateModelBalanced(model,options,XNew,YNew,settings.numSelectSamples);
     else

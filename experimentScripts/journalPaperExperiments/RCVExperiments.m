@@ -42,7 +42,7 @@ for ns=1:length(NeighborModes)
             fprintf(fileID,'batch_size:%d \n',batchSize);
             fprintf(fileID,'data_limit:%d \n',dataLimit);
             fprintf(fileID,'Using warping?:%d \n',warping);
-            fprintf(fileID,'Using balancing?:%d \n',balanced);        
+            fprintf(fileID,'Using balancing?:%d \n',balanced);
             for r=1:nrRuns
                 aucs=[];
                 tuning_time=[];
@@ -53,14 +53,23 @@ for ns=1:length(NeighborModes)
                     trainClass=folds{r}.train_class;
                     testData=folds{r}.test;
                     testClass=folds{r}.test_class;
-                    %standardize the training and test data        
+                    
+                    %shuffle data according to the seed of run
+                    s = RandStream('mt19937ar','Seed',r);
+                    
+                    %shuffle the training data with the seed according to the run
+                    ix=randperm(s,size(trainData,1))';
+                    trainData=trainData(ix,:);
+                    trainClass=trainClass(ix,:);
+                    
+                    %standardize the training and test data
                     [trainData,min_train,max_train]=standardizeX(trainData);
                     testData=standardize(testData,min_train,max_train);
                     %for each category in train class we run one learning/inference
                     %procedure. We calculate AUCs and we average then
                     fprintf('Number of training data points %d-%d, class %d\n',size(trainData,1),size(trainData,2),size(trainClass,1));
                     fprintf('Number of test data points %d-%d\n',size(testData,1),size(testData,2));
-                                        
+                    
                     trainClass(trainClass~=c)=-1;
                     trainClass(trainClass==c)=1;
                     testClass(testClass~=c)=-1;
@@ -85,17 +94,17 @@ for ns=1:length(NeighborModes)
                     settings.ks=ks(kNN);
                     settings.outputPath=outputPath;
                     settings.reportPointIndex=1;
-                    res1=runExperiment(settings,method)                   
+                    res1=runExperiment(settings,method)
                     selectedAUCs(c,:)=cell2mat(res1.selectedAUCs);
                     realAUCs(c,:)=cell2mat(res1.AUCs);
                     tuningTime(c,:)=res1.tuningTime;
                     runtime(c,:)=res1.runtime;
                     processingTime(c,:)=res1.processingTimes;
                 end
-                res.avgAUCs=mean(selectedAUCs);
-                res.avgRealAUCs=mean(realAUCs);
-                res.stdevRealAucs=std(realAUCs);
-                res.stdevAucs=std(selectedAUCs);
+                res.avgAUCs=nanmean(selectedAUCs);
+                res.avgRealAUCs=nanmean(realAUCs);
+                res.stdevRealAucs=nanstd(realAUCs);
+                res.stdevAucs=nanstd(selectedAUCs);
                 res.reportPoints=reportPoints;
                 res.tuningTime=mean(tuningTime);
                 res.stdevTuningTime=std(tuningTime);
@@ -110,17 +119,17 @@ for ns=1:length(NeighborModes)
             avgAucs=zeros(1,length(reportPoints));
             realAvgAUCs=zeros(1,length(reportPoints));
             for i=1:nrRuns
-                avgAucs=avgAucs+results{i}.avgAUCs;
-                realAvgAUCs=realAvgAUCs+results{i}.avgRealAUCs;
+                avgAucs(i,:)=results{i}.avgAUCs;
+                realAvgAUCs(i,:)=results{i}.avgRealAUCs;
                 allAucs(i,:)=results{i}.avgAUCs;
                 allRealAucs(i,:)=results{i}.avgRealAUCs;
                 runTimes(i,:)=results{i}.runtime+results{i}.tuningTime;
                 processingTimes(i,:)=results{i}.processingTime;
             end
-            stdev=std(allAucs);
-            stdevReal=std(allRealAucs);
-            avgAucs=avgAucs/nrRuns;
-            realAvgAUCs=realAvgAUCs/nrRuns;
+            stdev=nanstd(allAucs);
+            stdevReal=nanstd(allRealAucs);
+            avgAucs=nanmean(avgAucs,1);
+            realAvgAUCs=nanmean(realAvgAUCs,1);
             avgRuntime=mean(runTimes);
             stdRuntime=std(runTimes);
             save(sprintf('%s/auc.mat',outputPath),'avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');

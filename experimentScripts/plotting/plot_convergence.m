@@ -1,5 +1,5 @@
-pathiSRKDA='/home/irma/work/RESULTS/Incremental/UCI/smp_60/bs_100/Supervised/HeatKernel/k_0/iSRKDA/auc.mat'
-pathSRKDA='/home/irma/work/RESULTS/Incremental/UCI/smp_60/bs_100/Supervised/HeatKernel/k_0/SRKDA/auc.mat'
+pathiSRKDA='/home/irma/work/RESULTS/Incremental/RCV/smp_20/bs_100/Supervised/HeatKernel/k_0/iSRKDA/auc.mat'
+pathSRKDA='/home/irma/work/RESULTS/Incremental/RCV/smp_20/bs_100/Supervised/HeatKernel/k_0/SRKDA/auc.mat'
 
 isrkda=load(pathiSRKDA);
 srkda=load(pathSRKDA);
