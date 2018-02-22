@@ -125,10 +125,10 @@ for ns=1:length(NeighborModes)
                 runTimes(i,:)=results{i}.runtime+results{i}.tuningTime;
                 processingTimes(i,:)=results{i}.processingTimes;
             end
-            stdev=nanstd(allAucs,2);
-            stdevReal=nanstd(allRealAucs,2);
-            avgAucs=nanmean(avgAucs,2);
-            realAvgAUCs=nanmean(realAvgAUCs,2);
+            stdev=nanstd(allAucs);
+            stdevReal=nanstd(allRealAucs);
+            avgAucs=nanmean(avgAucs);
+            realAvgAUCs=nanmean(realAvgAUCs);
             avgRuntime=nanmean(runTimes);
             stdRuntime=std(runTimes);
             
