@@ -110,7 +110,7 @@ for ns=1:length(NeighborModes)
                 stdev=nanstd(allAucs);
                 stdevReal=nanstd(allRealAucs);
                 avgAucs=nanmean(avgAucs);
-                realAvgAUCs=realAvgAUCs/nrRuns;
+                realAvgAUCs=nanmean(realAvgAUCs);
                 avgRuntime=nanmean(runTimes);
                 stdRuntime=nanstd(runTimes);
                 save(sprintf('%s/auc.mat',outputPath),'avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
