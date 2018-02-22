@@ -128,7 +128,7 @@ for ns=1:length(NeighborModes)
             end
             stdev=nanstd(allAucs);
             stdevReal=nanstd(allRealAucs);
-            avgAucs=nanmean(avgAucs,1);
+            avgAucs=nanmean(avgAucs,1)
             realAvgAUCs=nanmean(realAvgAUCs,1);
             avgRuntime=mean(runTimes);
             stdRuntime=std(runTimes);
