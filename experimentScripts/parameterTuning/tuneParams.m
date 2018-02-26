@@ -43,8 +43,7 @@ else
                     train_batch=train_batch(ix,:);
                     train_batch_class=train_batch_class(ix,:);
                     options.test=folds{k}.test;
-                    options.test_class=folds{k}.test_class;
-                    
+                    options.test_class=folds{k}.test_class;                   
                     [res]=methodType(settings,options,inferenceType);                    
                     aucs=[];
                     for s=1:size(res.selectedKernels,1)

@@ -1,6 +1,6 @@
 function [results]=iSRKDA(settings,inferenceType)
 start_tuning=tic;
-[reguAlpha,reguBeta,kernelSigma]=tuneParams(settings,inferenceType);
+[reguAlpha,reguBeta,kernelSigma]=tuneParams(settings,@MAEDIncremental,inferenceType);
 tuningTime=toc(start_tuning)
 
 if ~isfield(settings,'reportPointIndex')
