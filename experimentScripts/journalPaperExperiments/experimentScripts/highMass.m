@@ -1,4 +1,4 @@
-function [outputPath]=highMassiSRKDA(experimentName,fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,runs,validationOffset,numSelectSamples,batchSize,dataLimit)
+function [outputPath]=highMass(experimentName,fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,runs,validationOffset,numSelectSamples,batchSize,dataLimit)
 shuffleSeedValidation=1000;
 outputPath=sprintf('%s/smp_%d/bs_%d/',output,numSelectSamples,batchSize)
 %params=highMassPhysicsExperimentValidation('iSRKDA',@MAEDIncrementalSequential,shuffleSeedValidation,validationOffset,@srkdaInference,fidTrain,offsetTrain,outputPath,codePath,numSelectSamples,batchSize,dataLimit,1,1,[0.0001,0.01],[0.001],[5,10]);
