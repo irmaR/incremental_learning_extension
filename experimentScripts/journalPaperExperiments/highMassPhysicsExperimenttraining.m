@@ -51,7 +51,7 @@ fidIndicesTrain=fidIndicesTrain(ix',:);
 
 
 nrTrain=size(fidIndicesTrain,1);
-batchReport=30;
+batchReport=5000;
 
 settings.initSample=[];
 settings.initClass=[];
