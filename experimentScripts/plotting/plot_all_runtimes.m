@@ -1,20 +1,9 @@
 clear all
 close all
-samples=[20,40,60,80,100];
+samples=[40,60,80];
 [y1i,e1i,y1b,e1b,y1l,e1l]=plot_runtimes_over_samples('/home/irma/work/RESULTS/Incremental/UCI/','UCI');
 [y2i,e2i,y2b,e2b,y2l,e2l]=plot_runtimes_over_samples('/home/irma/work/RESULTS/Incremental/RCV/','RCV');
 [y3i,e3i,y3b,e3b,y3l,e3l]=plot_runtimes_over_samples('/home/irma/work/RESULTS/Incremental/USPS/','USPS')
-fig=figure(1)
-y3i(4)=29.5;
-
-y2b(3)=1.1*y2b(2);
-e2b(3)=e2b(2);
-y2i(3)=2*y2i(2);
-y2i(5)=2*y2i(4);
-%fig = gcf;
-%fig.PaperPositionMode = 'auto'
-%fig_pos = fig.PaperPosition;
-%fig.PaperSize = [fig_pos(3) fig_pos(4)];
 
 subplot(1,3,1)
 hold on

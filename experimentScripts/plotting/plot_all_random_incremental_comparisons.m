@@ -46,7 +46,7 @@ plot(samples1,random3,'g+-','LineWidth',5);hold on;
 plot(samples1,incr32,'kd','LineWidth',5)
 plot(samples1,incr33,'cs','LineWidth',5)
 plot(samples1,incr34,'mo','LineWidth',5)
-set(gca,'FontSize',20)
+set(gca,'FontSize',25)
 set(gca,'LooseInset',get(gca,'TightInset'))
 xlim([samples1(1) samples1(length(samples1))]);
 ylim([0.5 1])
@@ -70,10 +70,12 @@ for i=1:length(samples)
     path_to_random=sprintf('%s/smp_%d/bs_%d/Supervised/HeatKernel/k_0/random/auc.mat',path_to_results,samples(i),bs);
     
     if exist(path_to_incr, 'file') == 2
-        avg_auc_inct=load(path_to_incr,'avgAucs');
-        std_auc_inct=load(path_to_incr,'stdev');
-        avg_aucs_inct{i}=avg_auc_inct.avgAucs;
-        std_aucs_inct{i}=std_auc_inct.stdev;
+        %avg_auc_inct=load(path_to_incr,'avgAucs').avgAucs;
+        %std_auc_inct=load(path_to_incr,'stdev');
+        avg_auc_inct=load(path_to_incr,'realAvgAUCs');
+        std_auc_inct=load(path_to_incr,'stdevReal');
+        avg_aucs_inct{i}=avg_auc_inct.realAvgAUCs;
+        std_aucs_inct{i}=std_auc_inct.stdevReal;
         report_points=load(path_to_incr,'reportPoints')
         nr_report_points=length(report_points.reportPoints)
     else
@@ -82,10 +84,12 @@ for i=1:length(samples)
     end
     
     if exist(path_to_random, 'file') == 2
-        avg_auc_rnd=load(path_to_random,'avgAucs');
-        std_auc_rnd=load(path_to_random,'stdev');
-        avg_aucs_rnd{i}=avg_auc_rnd.avgAucs;
-        std_aucs_rnd{i}=std_auc_rnd.stdev;
+        %avg_auc_rnd=load(path_to_random,'avgAucs').avgAucs;
+        %std_auc_rnd=load(path_to_random,'stdev');
+        avg_auc_rnd=load(path_to_random,'realAvgAUCs');
+        std_auc_rnd=load(path_to_random,'stdevReal');
+        avg_aucs_rnd{i}=avg_auc_rnd.realAvgAUCs;
+        std_aucs_rnd{i}=std_auc_rnd.stdevReal;
         report_points=load(path_to_incr,'reportPoints');
         nr_report_points=length(report_points.reportPoints)
     else

@@ -1,5 +1,5 @@
 function [avg_runtimes_inct,std_runtimes_inct,avg_runtimes_batch,std_runtimes_batch,avg_runtimes_lssvm,std_runtimes_lssvm]=plot_runtimes_over_samples(path_to_results,title_text)
-samples=[20,40,60,80,100];
+samples=[20,40,60];
 bs=100;
 avg_runtimes_inct=[];
 std_runtimes_inct=[];
@@ -17,8 +17,8 @@ for i=1:length(samples)
     if exist(path_to_incr, 'file') == 2
     avg_runtime_inct=load(path_to_incr,'avgRuntime')
     std_runtime_inct=load(path_to_incr,'stdRuntime')
-    avg_runtimes_inct(i)=avg_runtime_inct.avgRuntime;
-    std_runtimes_inct(i)=std_runtime_inct.stdRuntime;    
+    avg_runtimes_inct(i)=avg_runtime_inct.avgRuntime(end);
+    std_runtimes_inct(i)=std_runtime_inct.stdRuntime(end);    
     else
        avg_runtimes_inct(i)=NaN;
        std_runtimes_inct(i)=NaN;
@@ -27,8 +27,8 @@ for i=1:length(samples)
     if exist(path_to_batch, 'file') == 2
     avg_runtime_batch=load(path_to_batch,'avgRuntime')
     std_runtime_batch=load(path_to_batch,'stdRuntime')
-    avg_runtimes_batch(i)=avg_runtime_batch.avgRuntime;
-    std_runtimes_batch(i)=std_runtime_batch.stdRuntime;
+    avg_runtimes_batch(i)=avg_runtime_batch.avgRuntime(end);
+    std_runtimes_batch(i)=std_runtime_batch.stdRuntime(end);
     else
        avg_runtimes_batch(i)=NaN;
        std_runtimes_batch(i)=NaN;
@@ -37,8 +37,8 @@ for i=1:length(samples)
     if exist(path_to_lssvm, 'file') == 2
     avg_runtime_lssvm=load(path_to_lssvm,'avgRuntime')
     std_runtime_lssvm=load(path_to_lssvm,'stdRuntime')
-    avg_runtimes_lssvm(i)=avg_runtime_lssvm.avgRuntime;
-    std_runtimes_lssvm(i)=std_runtime_lssvm.stdRuntime;
+    avg_runtimes_lssvm(i)=avg_runtime_lssvm.avgRuntime(end);
+    std_runtimes_lssvm(i)=std_runtime_lssvm.stdRuntime(end);
     else
        avg_runtimes_lssvm(i)=NaN;
        std_runtimes_lssvm(i)=NaN;

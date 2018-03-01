@@ -39,8 +39,8 @@ options.ReguAlpha = reguAlpha;
 options.k=settings.ks;
 options.WeightMode=settings.weightMode;
 options.NeighborMode=settings.neighbourMode;
-options.test=settings.XTest;
-options.test_class=settings.YTest;
+%options.test=settings.XTest;
+%options.test_class=settings.YTest;
 best_options=options;
 %measure time
 tic;
@@ -54,7 +54,7 @@ fprintf('Running the learning...')
 sprintf('Run %d, Alpha: %f, Sigma: %f',settings.run,options.ReguAlpha,options.t)
 fprintf('Init sample size %d-%d',size(settings.initSample,1),size(settings.initSample,2))
 
-[results]=randomSequential(settings.XTrainFileID,settings.indicesOffsetTrain,settings.formattingString,settings.delimiter,settings.numSelectSamples,settings.batchSize,settings.reportPoints,options,inferenceType);
+[results]=randomSelectionSequential(settings,options,inferenceType);
 
 runtime=toc;
 

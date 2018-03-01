@@ -5,8 +5,11 @@ nr_samples1=ceil(numSamples/2);
 nr_samples2=numSamples-nr_samples1;
 model.X=XObserved;
 model.Y=YObserved;
+starting_count=tic;
+sprintf('Batch size: %d',size(model.X,1))
 [model,~]=MAED(model,size(model.X,1),options);
-
+end_time=toc(starting_count);
+sprintf('It took %d seconds to get the points',end_time)
 try
     ix_up_class1=find(model.Y==classes(1));
 catch

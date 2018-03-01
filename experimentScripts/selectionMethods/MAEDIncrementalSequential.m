@@ -82,12 +82,6 @@ while 1
         current_area=area;
         model=newModel;
     end
-    
-    
-    
-    
-    
-    
     if point<=length(settings.reportPoints)
         sprintf('HERE')
         results.selectedDataPoints{point}=model.X;
@@ -112,16 +106,8 @@ while 1
         results.reportPoints=settings.reportPoints;
         results.reportPointIndex=results.reportPointIndex;
         save(sprintf('%s/results.mat',settings.outputPath),'results');
-        
         pointerObs=pointerObs+batch;
     end
-    
-    settings.reportPoints
-    pointerObs
-    point
-    settings.reportPoints(point)
-    point<=length(settings.reportPoints)
-    pointerObs<=settings.reportPoints(point)
     
     if point+1<=length(settings.reportPoints)
         if pointerObs+batch>=settings.reportPoints(point+1)

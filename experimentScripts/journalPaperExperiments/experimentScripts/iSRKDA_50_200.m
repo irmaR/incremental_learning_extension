@@ -10,4 +10,4 @@ dataLimit=3000;
 validationOffset=20;
 runs=1;
 w = warning ('off','all');
-resultsPath=highMassiSRKDA(fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,runs,validationOffset,numSelectSamples,batchSize,dataLimit)
+resultsPath=highMassiSRKDA('random',fidTrain,fidTest,offsetTrain,offsetTest,output,codePath,runs,validationOffset,numSelectSamples,batchSize,dataLimit)
