@@ -3,7 +3,7 @@ shuffleSeedValidation=1000;
 outputPath=sprintf('%s/smp_%d/bs_%d/',output,numSelectSamples,batchSize)
 %params=highMassPhysicsExperimentValidation('iSRKDA',@MAEDIncrementalSequential,shuffleSeedValidation,validationOffset,@srkdaInference,fidTrain,offsetTrain,outputPath,codePath,numSelectSamples,batchSize,dataLimit,1,1,[0.0001,0.01],[0.001],[5,10]);
 %fprintf('Validation finished')
-addpath(genpath(pathToCode));
+addpath(genpath(codePath));
 params.reguAlpha=0.01;
 params.reguBeta=0.01;
 params.kernelSigma=0.5;
