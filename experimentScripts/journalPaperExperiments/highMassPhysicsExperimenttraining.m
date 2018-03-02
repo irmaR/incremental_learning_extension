@@ -5,7 +5,7 @@ ks=0;
 reguBetaParams=betas;
 reguAlphaParams=alphas;
 kernelParams=kernels;
-output_path=sprintf('%s/%s/run%d/',pathToResults,method,run);
+output_path=sprintf('%s/%s/',pathToResults,method,run);
 fprintf('Making folder %s',output_path);
 mkdir(output_path);
 param_info=sprintf('%s/params.txt',output_path);
@@ -38,7 +38,14 @@ fidIndicesTrain=fidIndicesTrain.arrayofOffsets;
 %shuffle the array according to the validation seed
 sVal=RandStream('mt19937ar','Seed',shuffleSeedValidation);
 ix=randperm(sVal,size(fidIndicesTrain,1));
+
+
+
 %shuffle the array according to the run seed
+
+
+
+
 %Load training data indices and shuffle
 %Reserve one random part of train for selecting the model: this will be
 %called validation
@@ -46,7 +53,7 @@ s = RandStream('mt19937ar','Seed',run);
 ix=randperm(s,size(fidIndicesTrain,1));
 fidIndicesTrain=fidIndicesTrain(ix',:);
 fidIndicesValidation=fidIndicesTrain(ix(1:validationOffset)',:);
-fidIndicesTrain=fidIndicesTrain(ix((validationOffset+1))',:);
+fidIndicesTrain=fidIndicesTrain(ix((validationOffset+1):end)',:);
 
 nrTrain=size(fidIndicesTrain,1);
 
