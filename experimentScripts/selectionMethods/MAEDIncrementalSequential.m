@@ -62,6 +62,7 @@ while 1
     %sprintf('Running inference on model')
     %run model selection on the validation data. Pick the model if it
     %improves the performance
+    time1=toc(starting_count);
     areaSelection=log_reg_validation(newModel.K,newModel.X,newModel.Y,settings,settings,options);
     areaTrain=-1;
     areaSelection=max(areaSelection,1-areaSelection);
@@ -80,11 +81,12 @@ while 1
     %get the test AUC given the current model
     area=inferenceType(model.K,model.X,model.Y,settings,settings,options);
     area=max(area,1-area);
+
     if point<=length(settings.reportPoints)
         results.selectedDataPoints{point}=model.X;
         results.selectedLabels{point}=model.Y;
         results.selectedKernels{point}=model.K;
-        results.times(point)=toc(starting_count);
+        results.times(point)=time1;
         results.processingTimes(point)=toc(starting_count1);
         results.selectedAUCs{point}=current_area;
         results.percentageRemoved{point}=newModel.percentageRemoved;
@@ -106,10 +108,6 @@ while 1
         %fprintf('Reported at point %d',point)
         pointerObs=pointerObs+batch;
     end
-    %fprintf('Pointer %d\t',point)
-    %fprintf('Pointer 1 %d\t',point+1)
-    %fprintf('# %d\t',length(settings.reportPoints))
-    %fprintf('%d\n',point+1<=length(settings.reportPoints))
     if point+1<=length(settings.reportPoints)
         if pointerObs+batch>=settings.reportPoints(point+1)
             results.reportPointIndex=point;

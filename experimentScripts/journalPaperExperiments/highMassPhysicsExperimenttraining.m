@@ -38,22 +38,16 @@ fidIndicesTrain=fidIndicesTrain.arrayofOffsets;
 %shuffle the array according to the validation seed
 sVal=RandStream('mt19937ar','Seed',shuffleSeedValidation);
 ix=randperm(sVal,size(fidIndicesTrain,1));
-
-
-
 %shuffle the array according to the run seed
-
-
-
-
 %Load training data indices and shuffle
 %Reserve one random part of train for selecting the model: this will be
 %called validation
 s = RandStream('mt19937ar','Seed',run);
 ix=randperm(s,size(fidIndicesTrain,1));
 fidIndicesTrain=fidIndicesTrain(ix',:);
-fidIndicesTrain=fidIndicesTrain(ix((validationOffset+1):end)',:);
-fidIndicesValidation=fidIndicesTrain((1:ix((validationOffset+1):end))',:);
+fidIndicesValidation=fidIndicesTrain(ix(1:validationOffset)',:);
+fidIndicesTrain=fidIndicesTrain(ix((validationOffset+1))',:);
+
 nrTrain=size(fidIndicesTrain,1);
 
 %Load testing data indices and shuffle
@@ -64,10 +58,10 @@ ix=randperm(s,size(fidIndicesTest,1));
 shuffledTest=fidIndicesTest(ix',:);
 
 
-batchReport=3000;
+batchReport=5000;
 settings.initSample=[];
 settings.initClass=[];
-reportPoints=[numSelectSamples:batchReport:nrTrain]
+reportPoints=[numSelectSamples:batchReport:nrTrain];
 settings.reportPointIndex=1;
 
 
@@ -76,6 +70,7 @@ settings.XTrainFileID=fidTrain;
 settings.formattingString='%s%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f';
 settings.delimiter=',';
 
+size(fidIndicesValidation)
 settings.indicesOffsetValidation=fidIndicesValidation;
 
 settings.indicesOffsetTest=fidIndicesTest;

@@ -10,7 +10,7 @@ while 1
     if pointerObs+batch>=size(settings.indicesOffsetValidation,1) 
         batch=size(settings.indicesOffsetValidation,1)-pointerObs;
     end
-   [XNew,YNew]=getDataInstancesSequential(settings.XTrainFileID,settings.formattingString,settings.delimiter,settings.indicesOffsetTest(pointerObs:pointerObs+batch));
+   [XNew,YNew]=getDataInstancesSequential(settings.XTrainFileID,settings.formattingString,settings.delimiter,settings.indicesOffsetValidation(pointerObs:pointerObs+batch));
    if(size(XNew,1)==0)
        break
    end
