@@ -1,4 +1,4 @@
-function [area]=log_reg(kernel,selected_tr_points,selected_tr_labels,settings,dummy,options)
+function [area]=log_reg_validation(kernel,selected_tr_points,selected_tr_labels,settings,dummy,options)
 batch=settings.read_size_test;
 pointerObs=1;
 %mdl = fitglm(selected_tr_labels,selected_tr_labels,'Distribution','binomial','Link','logit')
@@ -7,10 +7,10 @@ predictions=[];
 test_labels=[];
 while 1
     starting_count1=tic;
-    if pointerObs+batch>=size(settings.indicesOffsetTest,1) 
-        batch=size(settings.indicesOffsetTest,1)-pointerObs;
+    if pointerObs+batch>=size(settings.indicesOffsetValidation,1) 
+        batch=size(settings.indicesOffsetValidation,1)-pointerObs;
     end
-   [XNew,YNew]=getDataInstancesSequential(settings.XTestFileID,settings.formattingString,settings.delimiter,settings.indicesOffsetTest(pointerObs:pointerObs+batch));
+   [XNew,YNew]=getDataInstancesSequential(settings.XTrainFileID,settings.formattingString,settings.delimiter,settings.indicesOffsetTest(pointerObs:pointerObs+batch));
    if(size(XNew,1)==0)
        break
    end

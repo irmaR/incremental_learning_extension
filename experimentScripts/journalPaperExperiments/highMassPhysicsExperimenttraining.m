@@ -2,9 +2,6 @@ function [output_path]=highMassPhysicsExperimenttraining(method,run,shuffleSeedV
 NeighborModes='Supervised';
 WeightModes='HeatKernel'
 ks=0;
-
-addpath(genpath(pathToCode));
-
 reguBetaParams=betas;
 reguAlphaParams=alphas;
 kernelParams=kernels;
@@ -38,39 +35,48 @@ fprintf(fileID,'Using balancing?:%d \n',balanced);
 fidTrain=fopen(fidTrain);
 fidIndicesTrain=load(fidIndicesTrain);
 fidIndicesTrain=fidIndicesTrain.arrayofOffsets;
-size(fidIndicesTrain,1)
 %shuffle the array according to the validation seed
 sVal=RandStream('mt19937ar','Seed',shuffleSeedValidation);
 ix=randperm(sVal,size(fidIndicesTrain,1));
-fidIndicesTrain=fidIndicesTrain(ix((validationOffset+1):end)',:);
+
+
+
 %shuffle the array according to the run seed
+
+
+
+
+%Load training data indices and shuffle
+%Reserve one random part of train for selecting the model: this will be
+%called validation
 s = RandStream('mt19937ar','Seed',run);
 ix=randperm(s,size(fidIndicesTrain,1));
 fidIndicesTrain=fidIndicesTrain(ix',:);
-
-
-
+fidIndicesTrain=fidIndicesTrain(ix((validationOffset+1):end)',:);
+fidIndicesValidation=fidIndicesTrain((1:ix((validationOffset+1):end))',:);
 nrTrain=size(fidIndicesTrain,1);
-batchReport=5000;
 
-settings.initSample=[];
-settings.initClass=[];
-reportPoints=[numSelectSamples:batchReport:nrTrain];
-settings.reportPointIndex=1;
-
-%get Test offset indices
+%Load testing data indices and shuffle
 fidTest=fopen(fidTest);
 fidIndicesTest=load(fidIndicesTest);
 fidIndicesTest=fidIndicesTest.arrayofOffsets;
-
-%sample a small subset from test data
 ix=randperm(s,size(fidIndicesTest,1));
 shuffledTest=fidIndicesTest(ix',:);
 
-settings.indicesOffsetTrain=fidIndicesTrain(1:nrTrain);
+
+batchReport=3000;
+settings.initSample=[];
+settings.initClass=[];
+reportPoints=[numSelectSamples:batchReport:nrTrain]
+settings.reportPointIndex=1;
+
+
+settings.indicesOffsetTrain=fidIndicesTrain;
 settings.XTrainFileID=fidTrain;
 settings.formattingString='%s%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f';
 settings.delimiter=',';
+
+settings.indicesOffsetValidation=fidIndicesValidation;
 
 settings.indicesOffsetTest=fidIndicesTest;
 settings.XTestFileID=fidTest;

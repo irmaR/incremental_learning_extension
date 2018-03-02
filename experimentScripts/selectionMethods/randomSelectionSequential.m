@@ -43,9 +43,9 @@ batch=settings.batchSize;
 
 while 1
     starting_count1=tic;
-    if pointerObs>=size(settings.indicesOffsetTrain,1)
-        break
-    end
+    %if pointerObs>=size(settings.indicesOffsetTrain,1)
+    %    break
+    %end
     ix=randperm(pointerObs+batch);
     indices=settings.indicesOffsetTrain(ix,:);
     indices=indices(1:settings.numSelectSamples);
@@ -66,7 +66,6 @@ while 1
         model=newModel;
     end
     if point<=length(settings.reportPoints)
-        sprintf('HERE')
         results.selectedDataPoints{point}=model.X;
         results.selectedLabels{point}=model.Y;
         results.selectedKernels{point}=model.K;
@@ -89,19 +88,20 @@ while 1
         results.reportPoints=settings.reportPoints;
         results.reportPointIndex=results.reportPointIndex;
         save(sprintf('%s/results.mat',settings.outputPath),'results');
+        %fprintf('Reported at point %d',point)
         pointerObs=pointerObs+batch;
     end
-    
+    %fprintf('Pointer %d\t',point)
+    %fprintf('Pointer 1 %d\t',point+1)
+    %fprintf('# %d\t',length(settings.reportPoints))
+    %fprintf('%d\n',point+1<=length(settings.reportPoints))
     if point+1<=length(settings.reportPoints)
         if pointerObs+batch>=settings.reportPoints(point+1)
             results.reportPointIndex=point;
             point=point+1;
         end
     else
-        if pointerObs+batch>=settings.reportPoints(point)
-            results.reportPointIndex=point;
-            point=point+1;
-        end
+        break;
     end
 end
 end
