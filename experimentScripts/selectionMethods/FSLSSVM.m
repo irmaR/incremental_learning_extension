@@ -66,14 +66,24 @@ for j=0:settings.batchSize:(size(settings.XTrain,1)-settings.numSelectSamples-se
     end
     newModel.X=Xs;
     newModel.Y=Ys;
-    area=inferenceType(newModel.X,newModel.Y,options.test,options.test_class,options);
-    area=max(area,1-area);
-    if area<current_area
+    areaSelection=inferenceType(newModel.X,newModel.Y,settings.validation,settings.validationClass,options);
+    areaSelection=max(areaSelection,1-areaSelection);
+    if areaSelection<current_area
         model=oldModel;
     else
-        current_area=area;
+        current_area=areaSelection;
         model=newModel;
     end
+    if areaSelection<current_area
+        model=oldModel;
+    else
+        current_area=areaSelection;
+        model=newModel;
+    end
+    %get the test AUC given the current model
+    area=inferenceType(model.X,model.Y,settings.XTest,settings.YTest,options);
+    area=max(area,1-area);
+    current_area=area;
     
     if point<=length(settings.reportPoints) && settings.numSelectSamples+j<=settings.reportPoints(point)
         results.selectedDataPoints{point}=model.X;

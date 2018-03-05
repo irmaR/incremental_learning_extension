@@ -20,6 +20,14 @@ for r=1:nrRuns
     %standardize the training and test data
     [trainData,min_train,max_train]=standardizeX(trainData);
     testData=standardize(test,min_train,max_train);
+    trainClass(trainClass~=1)=-1;
+    trainClass(trainClass==2)=1;
+    %I need validation data (a random subset of train data for
+    %model selection)
+    validation=trainData(1:2000,:);
+    validationClass=trainClass(1:2000,:);
+    trainData=trainData(2001:end,:);
+    trainClass=trainClass(2001:end,:);
     
     %this test dataset is pretty big so we will sample 1000 points in each
     %run
@@ -27,8 +35,7 @@ for r=1:nrRuns
     testData=testData(ix(1:1000),:);
     testClass=test_class(ix(1:1000),:);
     
-    trainClass(trainClass~=1)=-1;
-    trainClass(trainClass==2)=1;
+    
     testClass(testClass~=1)=-1;
     testClass(testClass==2)=1;
     
@@ -42,6 +49,8 @@ for r=1:nrRuns
     settings.YTrain=trainClass;
     settings.numSelectSamples=nrSamples;
     settings.batchSize=batchSize;
+    settings.validation=validation;
+    settings.validationClass=validationClass;
     settings.reportPoints=reportPoints;
     settings.dataLimit=dataLimit;
     settings.outputPath=outputPath;

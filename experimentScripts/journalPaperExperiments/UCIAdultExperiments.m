@@ -56,16 +56,25 @@ for ns=1:length(NeighborModes)
                 %pick 60% of the data in this run to be used
                 train=train(ix(1:ceil(size(ix,1)*2/3)),:);
                 trainClass=train_class(ix(1:ceil(size(ix,1)*2/3),:));
+                trainClass(trainClass~=1)=-1;
+                trainClass(trainClass==2)=1;
+
                 %standardize the training and test data
                 [train,min_train,max_train]=standardizeX(train);
                 testData=standardize(test,min_train,max_train);
+                
+                %I need validation data (a random subset of train data for
+                %model selection)
+                validation=train(1:2000,:);
+                validationClass=trainClass(1:2000,:);
+                train=train(2001:end,:);
+                trainClass=trainClass(2001:end,:);
+                             
                 %this test dataset is pretty big so we will sample 1000 points in each
                 %run
                 ix=randperm(s,size(testData,1))';
                 testData=testData(ix(1:1000),:);
                 testClass=test_class(ix(1:1000),:);
-                trainClass(trainClass~=1)=-1;
-                trainClass(trainClass==2)=1;
                 testClass(testClass~=1)=-1;
                 testClass(testClass==2)=1;
                 
@@ -73,12 +82,13 @@ for ns=1:length(NeighborModes)
                 fprintf('Number of test data points %d-%d\n',size(testData,1),size(testData,2));
                 reportPoints=[nrSamples:batchSize:size(train,1)-batchSize]
                 fprintf('Number of report points:%d',length(reportPoints))
-                %we don't use validation here. We tune parameters on training data
-                %(5-fold-crossvalidation)
+               
                 settings.XTrain=train;
                 settings.YTrain=trainClass;
                 settings.XTest=testData;
                 settings.YTest=testClass;
+                settings.validation=validation;
+                settings.validationClass=validationClass;
                 settings.reguAlphaParams=reguAlphaParams;
                 settings.reguBetaParams=reguBetaParams;
                 settings.kernelParams=kernelParams;

@@ -56,18 +56,25 @@ for j=0:settings.batchSize:(size(trainFea,1)-settings.numSelectSamples-settings.
         newModel = MAEDRankIncremental(model,XNew,YNew,settings.numSelectSamples,options);
     end
     %keep the new model if it improves the auc
-    area=inferenceType(newModel.K,newModel.X,newModel.Y,options.test,options.test_class,options);
-    %areaTrain=inferenceType(newModel.K,newModel.X,newModel.Y,newModel.X,newModel.Y,options);
-    area=max(area,1-area);
+    areaSelection=inferenceType(newModel.K,newModel.X,newModel.Y,settings.validation,settings.validationClass,options);    %areaTrain=inferenceType(newModel.K,newModel.X,newModel.Y,newModel.X,newModel.Y,options);
     areaTrain=-1;
-    %areaTrain=max(areaTrain,1-areaTrain);
-    %area=run_inference(kernel,current_sample,current_labels,options.test,options.test_class,options);
-    if area<current_area
+    areaSelection=max(areaSelection,1-areaSelection);
+    if areaSelection<current_area
         model=oldModel;
     else
-        current_area=area;
+        current_area=areaSelection;
         model=newModel;
     end
+    if areaSelection<current_area
+        model=oldModel;
+    else
+        current_area=areaSelection;
+        model=newModel;
+    end
+    %get the test AUC given the current model
+    area=inferenceType(model.K,model.X,model.Y,settings.XTest,settings.YTest,options);
+    area=max(area,1-area);
+    current_area=area;
     if point<=length(settings.reportPoints) && settings.numSelectSamples+j<=settings.reportPoints(point)
         results.selectedDataPoints{point}=model.X;
         results.selectedLabels{point}=model.Y;
