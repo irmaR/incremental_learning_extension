@@ -8,7 +8,7 @@ load(pathToData)
 outputPath=sprintf('%s/smp_%d/bs_%d/%s/',pathToResults,nrSamples,batchSize,'lssvm');
 fprintf('Making folder %s',outputPath)
 mkdir(outputPath)
-reportPoints=[nrSamples:batchSize:8664];
+reportPoints=[nrSamples:batchSize:(8664-2000)];
 for r=1:nrRuns
     aucs=[];
     tuning_time=[];

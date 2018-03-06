@@ -14,7 +14,7 @@ switch nargin
 end
 addpath(genpath(pathToCode))
 load(pathToData)
-reportPoints=[nrSamples:batchSize:8664];
+reportPoints=[nrSamples:batchSize:(8664-2000)];
 for ns=1:length(NeighborModes)
     for ws=1:length(WeightModes)
         for kNN=1:length(ks)
@@ -124,8 +124,10 @@ for ns=1:length(NeighborModes)
                 results{r}=res;
             end
             avgAucs=zeros(1,length(reportPoints));
+            size(avgAucs)
             realAvgAUCs=zeros(1,length(reportPoints));
             for i=1:nrRuns
+                size(results{i}.avgAUCs)
                 avgAucs(i,:)=results{i}.avgAUCs;
                 realAvgAUCs(i,:)=results{i}.avgRealAUCs;
                 allAucs(i,:)=results{i}.avgAUCs;
