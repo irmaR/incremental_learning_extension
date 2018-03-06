@@ -34,7 +34,7 @@ for r=1:nrRuns
         
         %I need validation data (a random subset of train data for
         %model selection)
-        validation=train(1:2000,:);
+        validation=trainData(1:2000,:);
         validationClass=trainClass(1:2000,:);
         trainData=trainData(2001:end,:);
         trainClass=trainClass(2001:end,:);
