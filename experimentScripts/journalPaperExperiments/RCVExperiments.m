@@ -61,7 +61,7 @@ for ns=1:length(NeighborModes)
                     ix=randperm(s,size(trainData,1))';
                     trainData=trainData(ix,:);
                     trainClass=trainClass(ix,:);
-                    
+                              
                     %standardize the training and test data
                     [trainData,min_train,max_train]=standardizeX(trainData);
                     testData=standardize(testData,min_train,max_train);
@@ -69,14 +69,21 @@ for ns=1:length(NeighborModes)
                     %procedure. We calculate AUCs and we average then
                     fprintf('Number of training data points %d-%d, class %d\n',size(trainData,1),size(trainData,2),size(trainClass,1));
                     fprintf('Number of test data points %d-%d\n',size(testData,1),size(testData,2));
-                    
                     trainClass(trainClass~=c)=-1;
                     trainClass(trainClass==c)=1;
                     testClass(testClass~=c)=-1;
                     testClass(testClass==c)=1;
+                    %I need validation data (a random subset of train data for
+                    %model selection)
+                    validation=train(1:2000,:);
+                    validationClass=trainClass(1:2000,:);
+                    train=train(2001:end,:);
+                    trainClass=trainClass(2001:end,:);
                     
                     settings.XTest=testData;
                     settings.YTest=testClass;
+                    settings.validation=validation;
+                    settings.validationClass=validationClass;
                     settings.XTrain=trainData;
                     settings.YTrain=trainClass;
                     settings.reguAlphaParams=reguAlphaParams;

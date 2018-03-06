@@ -32,9 +32,18 @@ for r=1:nrRuns
         testClass(testClass~=c)=-1;
         testClass(testClass==c)=1;
         
+        %I need validation data (a random subset of train data for
+        %model selection)
+        validation=train(1:2000,:);
+        validationClass=trainClass(1:2000,:);
+        train=train(2001:end,:);
+        trainClass=trainClass(2001:end,:);
+        
         settings.XTest=testData;
         settings.YTest=testClass;
         settings.XTrain=trainData;
+        settings.validation=validation;
+        settings.validationClass=validationClass;
         settings.YTrain=trainClass;
         settings.numSelectSamples=nrSamples;
         settings.batchSize=batchSize;
