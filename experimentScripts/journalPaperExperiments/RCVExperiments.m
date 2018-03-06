@@ -77,7 +77,7 @@ for ns=1:length(NeighborModes)
                     %model selection)
                     validation=train(1:2000,:);
                     validationClass=trainClass(1:2000,:);
-                    train=train(2001:end,:);
+                    trainData=trainData(2001:end,:);
                     trainClass=trainClass(2001:end,:);
                     
                     settings.XTest=testData;
