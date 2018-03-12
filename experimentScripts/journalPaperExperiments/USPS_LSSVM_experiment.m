@@ -8,7 +8,7 @@ load(pathToData)
 outputPath=sprintf('%s/smp_%d/bs_%d/%s/',pathToResults,nrSamples,batchSize,'lssvm');
 fprintf('Making folder %s',outputPath)
 mkdir(outputPath)
-reportPoints=[nrSamples:batchSize:(8400-batchSize)];
+reportPoints=[nrSamples:batchSize:(8400-batchSize-2000)];
 for r=1:nrRuns
     aucs=[];
     tuningTime=[];
@@ -29,11 +29,15 @@ for r=1:nrRuns
         trainClass(trainClass==c)=1;
         testClass(testClass~=c)=-1;
         testClass(testClass==c)=1;
+        validation=trainData(1:2000,:);
+        validationClass=trainClass(1:2000,:);
         
         settings.XTest=testData;
         settings.YTest=testClass;
         settings.XTrain=trainData;
         settings.YTrain=trainClass;
+        settings.validation=validation;
+        settings.validationClass=validationClass;
         fprintf('Number of test data points %d-%d, class %d\n',size(settings.XTest,1),size(settings.XTest,2),size(settings.YTest,2));
         settings.reguGammas=reguGammas;
         settings.kernelParams=kernelParams;
