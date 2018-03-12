@@ -45,7 +45,7 @@ for ns=1:length(NeighborModes)
             fprintf(fileID,'data_limit:%d \n',dataLimit);
             fprintf(fileID,'Using warping?:%d \n',warping);
             fprintf(fileID,'Using balancing?:%d \n',balanced);
-            reportPoints=[nrSamples:batchSize:(8400-batchSize)];
+            reportPoints=[nrSamples:batchSize:(8400-batchSize-2000)];
             for r=1:nrRuns
                 tuningTime=[];
                 runtime=[];
@@ -69,11 +69,18 @@ for ns=1:length(NeighborModes)
                     trainClass(trainClass==c)=1;
                     testClass(testClass~=c)=-1;
                     testClass(testClass==c)=1;
+                    validation=trainData(1:2000,:);
+                    validationClass=trainClass(1:2000,:);
+                    trainData=trainData(2001:end,:);
+                    trainClass=trainClass(2001:end,:);
+                    
                     
                     settings.XTest=testData;
                     settings.YTest=testClass;
                     settings.XTrain=trainData;
                     settings.YTrain=trainClass;
+                    settings.validation=validation;
+                    settings.validationClass=validationClass;
                     fprintf('Number of test data points %d-%d, class %d\n',size(settings.XTest,1),size(settings.XTest,2),size(settings.YTest,2));
                     settings.reguAlphaParams=reguAlphaParams;
                     settings.reguBetaParams=reguBetaParams;

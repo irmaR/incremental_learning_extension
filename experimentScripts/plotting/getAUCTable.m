@@ -13,9 +13,9 @@ for i=1:length(samplesN)
       end
       sprintf('PATH: %s',paths),exist(paths, 'file')
       if exist(paths, 'file')
-          auc=load(paths);
-          avgAUCs=auc.avgAucs
-          stdev=auc.stdev;
+          auc=load(paths)
+          avgAUCs=auc.realAvgAUCs
+          stdev=auc.stdevReal;
           res.appr=approaches{j};
           res.auc=avgAUCs(end)
           res.stdev=stdev(end);
