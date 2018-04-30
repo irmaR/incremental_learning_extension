@@ -9,8 +9,9 @@ function [area]=srkdaInference(kernel,selected_tr_points,selected_tr_labels,test
    end
    options.Kernel=1;
    options.ReguType = 'Ridge';
-   options.gnd=selected_tr_labels;  
-   [eigvector, elapseKSR] = KSR_caller(options, kernel);
+   options.gnd=selected_tr_labels;
+   [eigvector, elapseKSR] = KSR(options, selected_tr_labels, kernel);
+   %[eigvector, elapseKSR] = KSR_caller(options, kernel);
    if isempty(eigvector)
        options=rmfield(options,'gnd');
        Woptions.gnd = selected_tr_labels ;

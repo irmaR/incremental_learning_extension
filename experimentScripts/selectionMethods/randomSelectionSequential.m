@@ -40,20 +40,50 @@ results.percentageRemoved{point}=0;
 point=point+1;
 pointerObs=settings.numSelectSamples;
 batch=settings.batchSize;
-
+ix=randperm(pointerObs+batch);
+indices=settings.indicesOffsetTrain(ix,:);
 while 1
     starting_count1=tic;
-    %if pointerObs>=size(settings.indicesOffsetTrain,1)
-    %    break
-    %end
-    ix=randperm(pointerObs+batch);
-    indices=settings.indicesOffsetTrain(ix,:);
-    indices=indices(1:settings.numSelectSamples);
+    %indices=indices(1:settings.numSelectSamples);
     %sample dataLimit datapoints from here
     oldModel=model;
-    [XObserved,YObserved]=getDataInstancesSequential(settings.XTrainFileID,settings.formattingString,settings.delimiter,indices);
+    fprintf('Slice %d - %d\n',pointerObs+1,pointerObs+batch)
+    %[XObserved,YObserved]=getDataInstancesSequential(settings.XTrainFileID,settings.formattingString,settings.delimiter,indices);
+    [XObserved,YObserved]=getDataInstancesSequential(settings.XTrainFileID,settings.formattingString,settings.delimiter,settings.indicesOffsetTrain(1:pointerObs+batch));
     newModel.X=XObserved;
     newModel.Y=YObserved;
+    %balanced
+    classes=unique(newModel.Y);
+    %determine how many samples to select from each class
+    nr_samples1=ceil(settings.numSelectSamples/2);
+    nr_samples2=settings.numSelectSamples-nr_samples1;
+    model.X=XObserved;
+    model.Y=YObserved;
+    starting_count=tic;
+    try
+        ix_up_class1=find(model.Y==classes(1));
+    catch
+        ix_up_class1=[];
+    end
+    try
+        ix_up_class2=find(model.Y==classes(2));
+    catch
+        ix_up_class2=[];
+    end
+    if nr_samples1>size(ix_up_class1,1)
+        nr_samples1=size(ix_up_class1,1);
+        nr_samples2=settings.numSelectSamples-nr_samples1;
+    end
+    
+    if nr_samples2>size(ix_up_class2,1)
+        nr_samples2=size(ix_up_class2,1);
+        nr_samples1=settings.numSelectSamples-nr_samples2;
+    end
+    current_sample=[model.X(ix_up_class1(1:nr_samples1),:);model.X(ix_up_class2(1:nr_samples2),:)];
+    current_labels=[model.Y(ix_up_class1(1:nr_samples1),:);model.Y(ix_up_class2(1:nr_samples2),:)];
+    newModel.X=current_sample;
+    newModel.Y=current_labels;
+    [a,~]=hist(newModel.Y,unique(newModel.Y));
     [newModel,values]=MAED(newModel,settings.numSelectSamples,options);
     %keep the new model if it improves the auc
     area=inferenceType(model.K,model.X,model.Y,settings,settings,options);
@@ -88,13 +118,8 @@ while 1
         results.reportPoints=settings.reportPoints;
         results.reportPointIndex=results.reportPointIndex;
         save(sprintf('%s/results.mat',settings.outputPath),'results');
-        %fprintf('Reported at point %d',point)
         pointerObs=pointerObs+batch;
     end
-    %fprintf('Pointer %d\t',point)
-    %fprintf('Pointer 1 %d\t',point+1)
-    %fprintf('# %d\t',length(settings.reportPoints))
-    %fprintf('%d\n',point+1<=length(settings.reportPoints))
     if point+1<=length(settings.reportPoints)
         if pointerObs+batch>=settings.reportPoints(point+1)
             results.reportPointIndex=point;

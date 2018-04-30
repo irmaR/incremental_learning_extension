@@ -52,7 +52,6 @@ results.reguBeta=reguBeta;
 results.sigma=kernelSigma;
 fprintf('Running the learning...')
 sprintf('Run %d, Alpha: %f, Sigma: %f',settings.run,options.ReguAlpha,options.t)
-fprintf('Init sample size %d-%d',size(settings.initSample,1),size(settings.initSample,2))
 
 [results]=randomSelectionSequential(settings,options,inferenceType);
 

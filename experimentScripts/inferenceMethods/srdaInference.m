@@ -9,7 +9,7 @@ if length(unique(trainLabels))==1
 end
 options.ReguType = 'Ridge';
 options.gnd = trainLabels;
-[eigvector, ~] = SR_caller(options,trainFea);
+[eigvector, ~] = SR(options,trainLabels,trainFea);
 Yhat = testFea*eigvector; %projection
 if sum(isnan(Yhat))~=0
     area=0;
