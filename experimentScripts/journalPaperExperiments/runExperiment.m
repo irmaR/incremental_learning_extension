@@ -24,6 +24,8 @@ switch lower(method)
         results=randomSequential(settings,@srkdaInference);
     case {lower('lssvm')}
         results=incrementalLSSVM(settings);
+    case {lower('srms')}
+        results=incrementalSRMS(settings);
 end
 end
 

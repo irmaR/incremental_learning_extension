@@ -1,0 +1,17 @@
+function [Xs,Ys]=SRMSBalanced(XObs,YObs,N,options)
+r=0;
+size(XObs)
+size(XObs')
+verbose = true;
+[repInd,C] = smrs(XObs',options.alpha,r,verbose);
+size
+indices=repInd';
+size(XObs)
+repInd
+N
+size(indices)
+Xs=Xobs(indices(1:N,:));
+Ys=Yobs(indices(1:N,:));
+size(Xs)
+size(Ys)
+end

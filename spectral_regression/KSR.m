@@ -140,10 +140,8 @@ switch lower(options.ReguType)
                 K(i,i) = K(i,i) + options.ReguAlpha;
             end
         end
-
         R = chol(K);
         eigvector = R\(R'\Responses);
-
         tmpNorm = sqrt(sum((eigvector'*K).*eigvector',2));
         eigvector = eigvector./repmat(tmpNorm',size(eigvector,1),1);
     case {lower('RidgeLasso')}

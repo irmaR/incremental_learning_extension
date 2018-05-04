@@ -217,15 +217,12 @@ switch lower(options.ReguType)
                         ddata(i,i) = ddata(i,i) + options.ReguAlpha;
                     end
                 end
-
                 ddata = max(ddata,ddata');
                 R = chol(ddata);
                 eigvector = R\(R'\Responses);
-
                 eigvector = data'*eigvector;
-            else
-                ddata = full(data'*data);
-                
+            else                       
+                ddata = full(data'*data);                
                 if options.ReguAlpha > 0
                     for i=1:size(ddata,1)
                         ddata(i,i) = ddata(i,i) + options.ReguAlpha;
@@ -240,7 +237,7 @@ switch lower(options.ReguType)
             end
         end
         eigvector = eigvector./repmat(max(1e-10,sum(eigvector.^2,1).^.5),size(eigvector,1),1);
-    case {lower('RidgeLasso')}
+    case {lower('RidgeLasso')}        
         nVector = size(Responses,2);
         switch lower(options.LASSOway)
             case {lower('LARs')}

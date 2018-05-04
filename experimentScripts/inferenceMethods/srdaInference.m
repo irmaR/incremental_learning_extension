@@ -14,6 +14,6 @@ Yhat = testFea*eigvector; %projection
 if sum(isnan(Yhat))~=0
     area=0;
 else
-    [X,Y,T,area] = perfcurve(testLabels,Yhat,'1');
+    [X,Y,T,area] = perfcurve(testLabels,Yhat,options.positiveClass);
 end
 end

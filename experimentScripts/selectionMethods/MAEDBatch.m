@@ -27,6 +27,7 @@ current_area=inferenceType(model.K,model.X,model.Y,options.test,options.test_cla
 aucTrain=inferenceType(model.K,model.X,model.Y,model.X,model.Y,options);
 current_area=max(current_area,1-current_area);
 aucTrain=max(aucTrain,1-aucTrain);
+[areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings,options)
 
 results.selectedKernels{point}=model.K;
 results.selectedDistances{point}=model.D;
@@ -40,6 +41,11 @@ results.realBetas{point}=values;
 results.AUCs{point}=current_area;
 results.selectedBetas{point}=values;
 results.percentageRemoved{point}=0;
+results.SRKDAAucs{point}=areaSRKDA;
+results.DTAUCs{point}=areaDT;
+results.SVMAUCs{point}=areaSVM;
+results.RidgeAUCs{point}=areaRidge;
+results.SRDAAUC{point}=areaSRDA;
 
 point=point+1;
 
@@ -63,6 +69,8 @@ for j=0:settings.batchSize:(size(trainFea,1)-settings.numSelectSamples-settings.
     else
         newModel=batchUpdateModel(model,options,XObserved,YObserved,settings.numSelectSamples);
     end
+    startInferenceTime=tic;
+
     %keep the new model if it improves the auc
     areaSelection=inferenceType(newModel.K,newModel.X,newModel.Y,settings.validation,settings.validationClass,options);    %areaTrain=inferenceType(newModel.K,newModel.X,newModel.Y,newModel.X,newModel.Y,options);
     areaTrain=-1;
@@ -80,18 +88,22 @@ for j=0:settings.batchSize:(size(trainFea,1)-settings.numSelectSamples-settings.
         model=newModel;
     end
     %get the test AUC given the current model
-    area=inferenceType(model.K,model.X,model.Y,settings.XTest,settings.YTest,options);
-    area=max(area,1-area);
-    current_area=area;
+    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings,options)
+    inferenceTime=toc(startInferenceTime);
+    current_area=areaSRKDA;
     if point<=length(settings.reportPoints) && settings.numSelectSamples+j<=settings.reportPoints(point)
         results.selectedDataPoints{point}=model.X;
         results.selectedLabels{point}=model.Y;
         results.selectedKernels{point}=model.K;
-        results.times(point)=toc(starting_count);
+        results.times(point)=toc(starting_count)-inferenceTime;
         results.processingTimes(point)=toc(starting_count1);
         results.selectedAUCs{point}=current_area;
         results.percentageRemoved{point}=newModel.percentageRemoved;
-        results.AUCs{point}=area;
+        results.SRKDAAucs{point}=areaSRKDA;
+        results.DTAUCs{point}=areaDT;
+        results.SVMAUCs{point}=areaSVM;
+        results.RidgeAUCs{point}=areaRidge;
+        results.SRDAAUC{point}=areaSRDA;
         results.trainAUCs{point}=areaTrain;
         results.selectedBetas{point}=oldModel.betas;
         results.realBetas{point}=newModel.betas;

@@ -69,10 +69,21 @@ for ns=1:length(NeighborModes)
                     %procedure. We calculate AUCs and we average then
                     fprintf('Number of training data points %d-%d, class %d\n',size(trainData,1),size(trainData,2),size(trainClass,1));
                     fprintf('Number of test data points %d-%d\n',size(testData,1),size(testData,2));
-                    trainClass(trainClass~=c)=-1;
-                    trainClass(trainClass==c)=1;
-                    testClass(testClass~=c)=-1;
-                    testClass(testClass==c)=1;
+                    for v=1:size(trainClass,1)
+                        if trainClass(v,:)==c
+                            trainClass(v,:)=1;
+                        else
+                            trainClass(v,:)=2;
+                        end
+                    end
+                    
+                    for v=1:size(testClass,1)
+                        if testClass(v,:)==c
+                            testClass(v,:)=1;
+                        else
+                            testClass(v,:)=2;
+                        end
+                    end
                     %I need validation data (a random subset of train data for
                     %model selection)
                     validation=trainData(1:2000,:);
@@ -101,16 +112,30 @@ for ns=1:length(NeighborModes)
                     settings.ks=ks(kNN);
                     settings.outputPath=outputPath;
                     settings.reportPointIndex=1;
+                    settings.positiveClass=1;
+                    settings.classes=[1,2];
                     res1=runExperiment(settings,method)
                     selectedAUCs(c,:)=cell2mat(res1.selectedAUCs);
-                    realAUCs(c,:)=cell2mat(res1.AUCs);
+                    SRKDAAucs(c,:)=cell2mat(res1.SRKDAAucs);
+                    SVMAucs(c,:)=cell2mat(res1.SVMAUCs);
+                    RidgeAucs(c,:)=cell2mat(res1.RidgeAUCs);
+                    SRDAAucs(c,:)=cell2mat(res1.SRDAAUC);
+                    DTAucs(c,:)=cell2mat(res1.DTAUCs);
                     tuningTime(c,:)=res1.tuningTime;
                     runtime(c,:)=res1.runtime;
                     processingTime(c,:)=res1.processingTimes;
                 end
+                res.SVMAucs=nanmean(SVMAucs);
+                res.SRDAAucs=nanmean(SRDAAucs);
+                res.DTAucs=nanmean(DTAucs);
+                res.RidgeAucs=nanmean(RidgeAucs);
+                res.stdevSVMAuc=nanstd(SVMAucs);
+                res.stdevDTAucs=nanstd(DTAucs);
+                res.stdevRidgeAucs=nanstd(RidgeAucs);  
+                res.stdevSRDAAucs=nanstd(SRDAAucs);  
                 res.avgAUCs=nanmean(selectedAUCs);
-                res.avgRealAUCs=nanmean(realAUCs);
-                res.stdevRealAucs=nanstd(realAUCs);
+                res.SRKDAAucs=nanmean(SRKDAAucs);
+                res.stdevRealAucs=nanstd(SRKDAAucs);
                 res.stdevAucs=nanstd(selectedAUCs);
                 res.reportPoints=reportPoints;
                 res.tuningTime=mean(tuningTime);
@@ -127,21 +152,32 @@ for ns=1:length(NeighborModes)
             size(avgAucs)
             realAvgAUCs=zeros(1,length(reportPoints));
             for i=1:nrRuns
-                size(results{i}.avgAUCs)
                 avgAucs(i,:)=results{i}.avgAUCs;
-                realAvgAUCs(i,:)=results{i}.avgRealAUCs;
+                SRKDAAucs(i,:)=results{i}.SRKDAAucs;
+                SVMAucs(i,:)=results{i}.SVMAucs;
+                DTAucs(i,:)=results{i}.DTAucs;
+                SRDAAucs(i,:)=results{i}.SRDAAucs;
+                RidgeAucs(i,:)=results{i}.RidgeAucs;
                 allAucs(i,:)=results{i}.avgAUCs;
-                allRealAucs(i,:)=results{i}.avgRealAUCs;
+                allRealAucs(i,:)=results{i}.SRKDAAucs;
                 runTimes(i,:)=results{i}.runtime+results{i}.tuningTime;
                 processingTimes(i,:)=results{i}.processingTime;
             end
             stdev=nanstd(allAucs);
-            stdevReal=nanstd(allRealAucs);
+            stdevReal=nanstd(SRKDAAucs);
             avgAucs=nanmean(avgAucs,1)
-            realAvgAUCs=nanmean(realAvgAUCs,1);
+            SRKDAAucs=nanmean(SRKDAAucs,1);
             avgRuntime=mean(runTimes);
             stdRuntime=std(runTimes);
-            save(sprintf('%s/auc.mat',outputPath),'avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
+            SVMAucs=nanmean(SVMAucs);
+            SRDAAucs=nanmean(SRDAAucs);
+            stdevSRDAAucs=nanstd(SRDAAucs);
+            stdevSVMAucs=nanstd(SVMAucs);
+            DTAucs=nanmean(DTAucs);
+            stdevDTAucs=nanstd(DTAucs);
+            RidgeAucs=nanmean(RidgeAucs);
+            stdevRidgeAucs=nanstd(RidgeAucs);
+            save(sprintf('%s/auc.mat',outputPath),'SRDAAucs','stdevSRDAAucs','SVMAucs','stdevSVMAucs','DTAucs','stdevDTAucs','RidgeAucs','stdevRidgeAucs','avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
             save(sprintf('%s/results.mat',outputPath),'results');
         end
     end

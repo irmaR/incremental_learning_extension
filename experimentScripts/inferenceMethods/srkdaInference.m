@@ -1,10 +1,10 @@
 function [area]=srkdaInference(kernel,selected_tr_points,selected_tr_labels,test_data,test_class,options)
-%if we only have one class, return area=0
-   if length(unique(selected_tr_labels))==1
+%if we only have one class, return area=0.5
+ if length(unique(selected_tr_labels))==1
        fprintf('only one label selected!\n')
        unique(selected_tr_labels)
        fprintf('\n')
-       area=NaN;
+       area=0.5;
        return
    end
    options.Kernel=1;
@@ -31,7 +31,7 @@ function [area]=srkdaInference(kernel,selected_tr_points,selected_tr_labels,test
    if sum(isnan(Yhat))~=0
        area=0;
    else
-   [X,Y,T,area] = perfcurve(test_class,Yhat,'1');
+   [X,Y,T,area] = perfcurve(test_class,Yhat,options.positiveClass);
    end
    options.Kernel=0;
 end

@@ -19,6 +19,15 @@ for r=1:nrRuns
         trainClass=folds{r}.train_class;
         testData=folds{r}.test;
         testClass=folds{r}.test_class;
+        
+        %shuffle data according to the seed of run
+        s = RandStream('mt19937ar','Seed',r);
+        
+        %shuffle the training data with the seed according to the run
+        ix=randperm(s,size(trainData,1))';
+        trainData=trainData(ix,:);
+        trainClass=trainClass(ix,:);
+        
         %standardize the training and test data
         trainData=standardizeX(trainData);
         testData=standardizeX(testData);
@@ -27,10 +36,22 @@ for r=1:nrRuns
         fprintf('Number of training data points %d-%d, class %d\n',size(trainData,1),size(trainData,2),size(trainClass,1));
         fprintf('Number of test data points %d-%d\n',size(testData,1),size(testData,2));
         
-        trainClass(trainClass~=c)=-1;
-        trainClass(trainClass==c)=1;
-        testClass(testClass~=c)=-1;
-        testClass(testClass==c)=1;
+        
+        for v=1:size(trainClass,1)
+            if trainClass(v,:)==c
+                trainClass(v,:)=1;
+            else
+                trainClass(v,:)=2;
+            end
+        end
+        
+        for v=1:size(testClass,1)
+            if testClass(v,:)==c
+                testClass(v,:)=1;
+            else
+                testClass(v,:)=2;
+            end
+        end
         
         %I need validation data (a random subset of train data for
         %model selection)
@@ -54,6 +75,8 @@ for r=1:nrRuns
         settings.run=r;
         settings.reguGammas=reguGammas;
         settings.kernelParams=kernelParams;
+        settings.positiveClass=1;
+        settings.classes=[1,2];
         res1=runExperiment(settings,'lssvm')
         
         selectedAUCs(c,:)=cell2mat(res1.selectedAUCs);
