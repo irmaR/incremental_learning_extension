@@ -79,7 +79,7 @@ for j=0:settings.batchSize:(size(trainFea,1)-settings.numSelectSamples-settings.
         model=newModel;
     end
     %get the test AUC given the current model
-    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings,options)
+    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings,options);
     inferenceTime=toc(startInferenceTime);
     current_area=areaSRKDA;
     if point<=length(settings.reportPoints) && settings.numSelectSamples+j<=settings.reportPoints(point)

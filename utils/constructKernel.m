@@ -40,9 +40,9 @@ end
 
 switch lower(options.KernelType)
     case {lower('Gaussian')}        %  e^{-(|x-y|^2)/2t^2}
-%         if ~isfield(options,'t')
-%             options.t = 1;
-%         end
+         if ~isfield(options,'t')
+             options.t = 1;
+         end
     case {lower('Polynomial')}      % (x'*y)^d
         if ~isfield(options,'d')
             options.d = 2;

@@ -16,11 +16,13 @@ results.percentageRemoved=cell(1,nrObsPoints);
 
 trainFea=settings.XTrain;
 trainClass=settings.YTrain;
-model.X=trainFea(1:settings.numSelectSamples,:);
+model.X=full(trainFea(1:settings.numSelectSamples,:));
 model.Y=trainClass(1:settings.numSelectSamples,:);
-model.K = constructKernel(full(model.X), [], options);
+model.K = constructKernel(model.X, [], options);
 point=1;
 %save current point
+size(model.K)
+model.K
 current_area=inferenceType(model.X,model.Y,options.test,options.test_class,options);
 [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings,options)
 results.selectedDataPoints{point}=model.X;
@@ -73,6 +75,7 @@ for j=0:settings.batchSize:(size(settings.XTrain,1)-settings.numSelectSamples-se
     %find representatives for class1
     [XClass1,YClass1]=FSLSSVMBalanced(XObservedClass1,YObservedClass1,nr_samples1,options);
     [XClass2,YClass2]=FSLSSVMBalanced(XObservedClass2,YObservedClass2,nr_samples2,options);
+    startInferenceTime=tic;
     oldModel=model;
     %Nc=settings.numSelectSamples;
     
@@ -96,15 +99,15 @@ for j=0:settings.batchSize:(size(settings.XTrain,1)-settings.numSelectSamples-se
     model.K = constructKernel(full(model.X), [], options);
     area=inferenceType(model.X,model.Y,settings.XTest,settings.YTest,options);
     area=max(area,1-area);
-    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings,options)
+    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings,options);
     
     current_area=area;
-    
+    inferenceTime=toc(startInferenceTime);
     if point<=length(settings.reportPoints) && settings.numSelectSamples+j<=settings.reportPoints(point)
         results.selectedDataPoints{point}=model.X;
         results.selectedLabels{point}=model.Y;
         results.times(point)=toc(starting_count);
-        results.processingTimes(point)=toc(starting_count1);
+        results.processingTimes(point)=toc(starting_count)-inferenceTime;
         results.selectedAUCs{point}=current_area;
         results.AUCs{point}=area;
         results.reportPointIndex=point;
