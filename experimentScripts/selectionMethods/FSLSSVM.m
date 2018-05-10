@@ -60,12 +60,12 @@ for j=0:settings.batchSize:(size(settings.XTrain,1)-settings.numSelectSamples-se
     ix_up_class2=find(YObserved==classes(2));
     if nr_samples1>size(ix_up_class1,1)
         nr_samples1=size(ix_up_class1,1);
-        nr_samples2=numSamples-nr_samples1;
+        nr_samples2=settings.numSelectSamples-nr_samples1;
     end
     
     if nr_samples2>size(ix_up_class2,1)
         nr_samples2=size(ix_up_class2,1);
-        nr_samples1=numSamples-nr_samples2;
+        nr_samples1=settings.numSelectSamples-nr_samples2;
     end
     XObservedClass1=XObserved(ix_up_class1,:);
     XObservedClass2=XObserved(ix_up_class2,:);
