@@ -1,4 +1,4 @@
-function [area]=srdaInference(K,trainFea,trainLabels,testFea,testLabels,options)
+function [area]=srdaInference(~,trainFea,trainLabels,testFea,testLabels,options)
 %if we only have one class, return area=0
 if length(unique(trainLabels))==1
     fprintf('only one label selected!\n')

@@ -92,6 +92,7 @@ for ns=1:length(NeighborModes)
                     trainClass=trainClass(2001:end,:);
                     
                     settings.XTest=testData;
+                    settings.markSelPoints=1;
                     settings.YTest=testClass;
                     settings.validation=validation;
                     settings.validationClass=validationClass;

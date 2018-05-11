@@ -63,7 +63,10 @@ for j=0:settings.batchSize:(size(trainFea,1)-settings.numSelectSamples-settings.
     end
     %keep the new model if it improves the auc
     startInferenceTime=tic;
-    areaSelection=inferenceType(newModel.K,newModel.X,newModel.Y,settings.validation,settings.validationClass,options);    %areaTrain=inferenceType(newModel.K,newModel.X,newModel.Y,newModel.X,newModel.Y,options);
+    %areaSelection=inferenceType(newModel.K,newModel.X,newModel.Y,settings.validation,settings.validationClass,options);    %areaTrain=inferenceType(newModel.K,newModel.X,newModel.Y,newModel.X,newModel.Y,options);
+    %areaSelection=srdaInference(newModel.K,newModel.X,newModel.Y,settings.validation,settings.validationClass,options); 
+    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(newModel,settings,options);
+    areaSelection=nanmean([areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]);
     areaTrain=-1;
     areaSelection=max(areaSelection,1-areaSelection);
     if areaSelection<current_area
