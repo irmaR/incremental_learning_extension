@@ -81,8 +81,8 @@ for j=0:settings.batchSize:(size(settings.XTrain,1)-settings.numSelectSamples-se
     newModel.X=full(XClass1);
     newModel.Y=YClass1;
     newModel.K = constructKernel(newModel.X, [], options);
-    areaSelection=inferenceType(newModel.K,newModel.X,newModel.Y,settings.validation,settings.validationClass,options);
-    areaSelection=max(areaSelection,1-areaSelection);
+    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(newModel,settings,options);
+    areaSelection=nanmean([areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]);
     if areaSelection<current_area
         model=oldModel;
     else
