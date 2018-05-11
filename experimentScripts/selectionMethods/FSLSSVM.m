@@ -81,7 +81,9 @@ for j=0:settings.batchSize:(size(settings.XTrain,1)-settings.numSelectSamples-se
     
     newModel.X=[XClass1;XClass2];
     newModel.Y=[YClass1;YClass2];
-    areaSelection=inferenceType(newModel.X,newModel.Y,settings.validation,settings.validationClass,options);
+    %areaSelection=inferenceType(newModel.X,newModel.Y,settings.validation,settings.validationClass,options);
+    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(newModel,settings,options);
+    areaSelection=nanmean([areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]);
     areaSelection=max(areaSelection,1-areaSelection);
     if areaSelection<current_area
         model=oldModel;
