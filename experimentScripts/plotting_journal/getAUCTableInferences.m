@@ -15,15 +15,15 @@ stdDT=[];
 stdRidge=[];
 
 for j=1:length(approaches)
-    if strcmp(approaches{j},'lssvm')
-        paths=sprintf('%s/smp_%d/bs_%d/%s/auc.mat',pathToResults,samplesN,batchSize,approaches{j});
-    else
+    %if strcmp(approaches{j},'lssvm')
+    %    paths=sprintf('%s/smp_%d/bs_%d/%s/auc.mat',pathToResults,samplesN,batchSize,approaches{j});
+    %else
         paths=sprintf('%s/smp_%d/bs_%d/%s/%s/auc.mat',pathToResults,samplesN,batchSize,specificResult,approaches{j});
-    end
+    %end
     sprintf('PATH: %s',paths),exist(paths, 'file')
     if exist(paths, 'file')
         auc=load(paths)
-        avgSRKDAAUC=auc.avgAucs;
+        avgSRKDAAUC=auc.avgAucs; 
         avgSRDAAUC=auc.SRDAAucs;
         avgDTAucs=auc.DTAucs;
         avgRidgeAucs=auc.RidgeAucs;

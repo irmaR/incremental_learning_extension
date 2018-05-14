@@ -80,11 +80,26 @@ for r=1:nrRuns
         res1=runExperiment(settings,'lssvm')
         
         selectedAUCs(c,:)=cell2mat(res1.selectedAUCs);
+        SRKDAAucs(c,:)=cell2mat(res1.SRKDAAucs);
+        SVMAucs(c,:)=cell2mat(res1.SVMAUCs);
+        RidgeAucs(c,:)=cell2mat(res1.RidgeAUCs);
+        SRDAAucs(c,:)=cell2mat(res1.SRDAAUC);
+        DTAucs(c,:)=cell2mat(res1.DTAUCs);
         realAUCs(c,:)=cell2mat(res1.AUCs);
         tuningTime(c,:)=res1.tuningTime;
         runtime(c,:)=res1.runtime;
         processingTime(c,:)=res1.processingTimes;
     end
+    res.SVMAucs=nanmean(SVMAucs);
+    res.SRDAAucs=nanmean(SRDAAucs);
+    res.DTAucs=nanmean(DTAucs);
+    res.RidgeAucs=nanmean(RidgeAucs);
+    res.stdevSVMAuc=nanstd(SVMAucs);
+    res.stdevDTAucs=nanstd(DTAucs);
+    res.stdevRidgeAucs=nanstd(RidgeAucs);
+    res.stdevSRDAAucs=nanstd(SRDAAucs);
+    res.avgAUCs=nanmean(selectedAUCs);
+    res.SRKDAAucs=nanmean(SRKDAAucs);
     res.avgAUCs=mean(selectedAUCs);
     res.avgRealAUCs=mean(realAUCs);
     res.stdevRealAucs=std(realAUCs);
@@ -103,19 +118,31 @@ end
 avgAucs=zeros(1,length(reportPoints));
 realAvgAUCs=zeros(1,length(reportPoints));
 for i=1:nrRuns
-    avgAucs=avgAucs+results{i}.avgAUCs;
-    realAvgAUCs=realAvgAUCs+results{i}.avgRealAUCs;
+    avgAucs(i,:)=results{i}.avgAUCs;
+    SRKDAAucs(i,:)=results{i}.SRKDAAucs;
+    SVMAucs(i,:)=results{i}.SVMAucs;
+    DTAucs(i,:)=results{i}.DTAucs;
+    SRDAAucs(i,:)=results{i}.SRDAAucs;
+    RidgeAucs(i,:)=results{i}.RidgeAucs;
     allAucs(i,:)=results{i}.avgAUCs;
-    allRealAucs(i,:)=results{i}.avgRealAUCs;
+    allRealAucs(i,:)=results{i}.SRKDAAucs;
     runTimes(i,:)=results{i}.runtime+results{i}.tuningTime;
     processingTimes(i,:)=results{i}.processingTime;
 end
-stdev=std(allAucs);
-stdevReal=std(allRealAucs);
-avgAucs=avgAucs/nrRuns;
-realAvgAUCs=realAvgAUCs/nrRuns;
+stdev=nanstd(allAucs);
+stdevReal=nanstd(SRKDAAucs);
+avgAucs=nanmean(avgAucs,1)
+SRKDAAucs=nanmean(SRKDAAucs,1);
 avgRuntime=mean(runTimes);
 stdRuntime=std(runTimes);
-save(sprintf('%s/auc.mat',outputPath),'avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
+SVMAucs=nanmean(SVMAucs);
+SRDAAucs=nanmean(SRDAAucs);
+stdevSRDAAucs=nanstd(SRDAAucs);
+stdevSVMAucs=nanstd(SVMAucs);
+DTAucs=nanmean(DTAucs);
+stdevDTAucs=nanstd(DTAucs);
+RidgeAucs=nanmean(RidgeAucs);
+stdevRidgeAucs=nanstd(RidgeAucs);
+save(sprintf('%s/auc.mat',outputPath),'SRDAAucs','stdevSRDAAucs','SVMAucs','stdevSVMAucs','DTAucs','stdevDTAucs','RidgeAucs','stdevRidgeAucs','avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
 save(sprintf('%s/results.mat',outputPath),'results');
 end
