@@ -12,7 +12,7 @@ options.classes=settings.classes;
 options.alpha=5;
 tic;
 [results]=SRMSelection(settings,options,@srkdaInference);
-results.tuningTime=tuningTime;
+results.tuningTime=0;
 results.bestOptions=options;
 runtime=toc;
 results.runtime=runtime;
