@@ -1,5 +1,5 @@
-pathiSRKDA1='/home/irma/work/RESULTS/Incremental/Hepmass_reduced/smp_20/bs_100/iSRKDA/run/results.mat'
-pathRandom='/home/irma/work/RESULTS/Incremental/Hepmass_reduced/smp_20/bs_100/random/run/results.mat'
+pathiSRKDA1='/home/irma/work/RESULTS/Incremental_Journal_Experiments_May/Hepmass_reduced/smp_20/bs_100/iSRKDA/run/results.mat'
+pathRandom='/home/irma/work/RESULTS/Incremental_Journal_Experiments_May/Hepmass_reduced/smp_20/bs_100/random/run1/results.mat'
 
 isrkda=load(pathiSRKDA1);
 random=load(pathRandom);
@@ -8,7 +8,8 @@ aucsiSRKDA=cell2mat(isrkda.results.AUCs);
 aucRandom=cell2mat(random.results.AUCs);
 
 
-
+aucsiSRKDA
+aucRandom
 plot(reportPoints1,aucsiSRKDA,'m','LineWidth',5);hold on;
 plot(reportPoints1,aucRandom,'g','LineWidth',5)
 set(gca,'FontSize',20)

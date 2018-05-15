@@ -23,7 +23,9 @@ indices=settings.indicesOffsetTrain(1:settings.numSelectSamples);
 point=1;
 [model,values] = MAED(model,settings.numSelectSamples,options);
 %save current point
-current_area=inferenceType(model.K,model.X,model.Y,settings,settings,options);
+current_area=SRDASequential(model.X,model.Y,settings,options,settings.indicesOffsetTest,settings.XTestFileID);
+
+%current_area=inferenceType(model.K,model.X,model.Y,settings,settings,options);
 aucTrain=-1;
 current_area=max(current_area,1-current_area);
 aucTrain=max(aucTrain,1-aucTrain);
@@ -63,7 +65,8 @@ while 1
     %run model selection on the validation data. Pick the model if it
     %improves the performance
     time1=toc(starting_count);
-    areaSelection=log_reg_validation(newModel.K,newModel.X,newModel.Y,settings,settings,options);
+    %areaSelection=log_reg_validation(newModel.K,newModel.X,newModel.Y,settings,settings,options);
+    areaSelection=SRDASequential(newModel.X,newModel.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
     areaTrain=-1;
     areaSelection=max(areaSelection,1-areaSelection);
     if areaSelection<current_area
@@ -79,8 +82,8 @@ while 1
         model=newModel;
     end
     %get the test AUC given the current model
-    area=inferenceType(model.K,model.X,model.Y,settings,settings,options);
-    area=max(area,1-area);
+    area=SRDASequential(model.X,model.Y,settings,options,settings.indicesOffsetTest,settings.XTestFileID);
+    area=max(area,1-area)
 
     if point<=length(settings.reportPoints)
         results.selectedDataPoints{point}=model.X;

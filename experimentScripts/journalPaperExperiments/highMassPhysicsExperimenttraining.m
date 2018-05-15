@@ -5,7 +5,7 @@ ks=0;
 reguBetaParams=betas;
 reguAlphaParams=alphas;
 kernelParams=kernels;
-output_path=sprintf('%s/%s/',pathToResults,method,run);
+output_path=sprintf('%s/%s/',pathToResults,method);
 fprintf('Making folder %s',output_path);
 mkdir(output_path);
 param_info=sprintf('%s/params.txt',output_path);
@@ -73,7 +73,6 @@ settings.delimiter=',';
 
 size(fidIndicesValidation)
 settings.indicesOffsetValidation=fidIndicesValidation;
-
 settings.indicesOffsetTest=fidIndicesTest;
 settings.XTestFileID=fidTest;
 settings.read_size_test=400;
@@ -90,6 +89,7 @@ settings.balanced=balanced;
 settings.weightMode=WeightModes;
 settings.neighbourMode=NeighborModes;
 settings.ks=ks;
+settings.positiveClass=1;
 settings.outputPath=output_path;
 
 results=runExperimentSequential(settings,method);

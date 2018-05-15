@@ -12,7 +12,7 @@ switch lower(method)
         results=incremental(training_data,training_class,test_data,test_class,reguAlphaParams,reguBetaParams,kernel_params,nr_samples,interval,batch_size,report_points,data_limit,'batch',r,warping,blda,k,WeightMode,NeighborMode,@srdaInference);
     case {lower('random')}
         fprintf('Running random sampling balanced version')
-        results=sequentialRandom(settings,@log_reg);
+        results=sequentialRandom(settings,@lssvmInference);
     case {lower('lssvm')}
         results=incremental_lssvm(training_data,training_class,test_data,test_class,reguAlphaParams,reguBetaParams,nr_samples,interval,batch_size,report_points,data_limit,'lssvm',r);
 end
