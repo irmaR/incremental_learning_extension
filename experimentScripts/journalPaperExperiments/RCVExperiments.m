@@ -150,7 +150,6 @@ for ns=1:length(NeighborModes)
                 results{r}=res;
             end
             avgAucs=zeros(1,length(reportPoints));
-            size(avgAucs)
             realAvgAUCs=zeros(1,length(reportPoints));
             for i=1:nrRuns
                 avgAucs(i,:)=results{i}.avgAUCs;
@@ -173,12 +172,13 @@ for ns=1:length(NeighborModes)
             SVMAucs=nanmean(SVMAucs);
             SRDAAucs=nanmean(SRDAAucs);
             stdevSRDAAucs=nanstd(SRDAAucs);
+            stdevSRKDAAucs=nanstd(SRKDAAucs);
             stdevSVMAucs=nanstd(SVMAucs);
             DTAucs=nanmean(DTAucs);
             stdevDTAucs=nanstd(DTAucs);
             RidgeAucs=nanmean(RidgeAucs);
             stdevRidgeAucs=nanstd(RidgeAucs);
-            save(sprintf('%s/auc.mat',outputPath),'SRDAAucs','stdevSRDAAucs','SVMAucs','stdevSVMAucs','DTAucs','stdevDTAucs','RidgeAucs','stdevRidgeAucs','avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
+            save(sprintf('%s/auc.mat',outputPath),'SRKDAAucs','stdevSRKDAAucs','SRDAAucs','stdevSRDAAucs','SVMAucs','stdevSVMAucs','DTAucs','stdevDTAucs','RidgeAucs','stdevRidgeAucs','avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
             save(sprintf('%s/results.mat',outputPath),'results');
         end
     end

@@ -27,7 +27,7 @@ current_area=inferenceType(model.K,model.X,model.Y,options.test,options.test_cla
 aucTrain=inferenceType(model.K,model.X,model.Y,model.X,model.Y,options);
 current_area=max(current_area,1-current_area);
 aucTrain=max(aucTrain,1-aucTrain);
-[areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings,options)
+[areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings.XTest,settings.YTest,options)
 
 results.selectedKernels{point}=model.K;
 results.selectedDistances{point}=model.D;
@@ -73,7 +73,7 @@ for j=0:settings.batchSize:(size(trainFea,1)-settings.numSelectSamples-settings.
 
     %keep the new model if it improves the auc
     %areaSelection=inferenceType(newModel.K,newModel.X,newModel.Y,settings.validation,settings.validationClass,options);    %areaTrain=inferenceType(newModel.K,newModel.X,newModel.Y,newModel.X,newModel.Y,options);
-    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(newModel,settings,options);
+    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(newModel,settings.validation,settings.validationClass,options);
     areaSelection=nanmean([areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]);
     areaTrain=-1;
     areaSelection=max(areaSelection,1-areaSelection);
@@ -90,9 +90,9 @@ for j=0:settings.batchSize:(size(trainFea,1)-settings.numSelectSamples-settings.
         model=newModel;
     end
     %get the test AUC given the current model
-    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings,options)
+    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings.XTest,settings.YTest,options)
     inferenceTime=toc(startInferenceTime);
-    current_area=areaSRKDA;
+    current_area=areaSelection;
     if point<=length(settings.reportPoints) && settings.numSelectSamples+j<=settings.reportPoints(point)
         results.selectedDataPoints{point}=model.X;
         results.selectedLabels{point}=model.Y;

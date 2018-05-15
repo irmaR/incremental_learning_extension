@@ -23,7 +23,7 @@ for j=1:length(approaches)
     sprintf('PATH: %s',paths),exist(paths, 'file')
     if exist(paths, 'file')
         auc=load(paths)
-        avgSRKDAAUC=auc.avgAucs; 
+        avgSRKDAAUC=auc.SRKDAAucs; 
         avgSRDAAUC=auc.SRDAAucs;
         avgDTAucs=auc.DTAucs;
         avgRidgeAucs=auc.RidgeAucs;
@@ -57,13 +57,15 @@ for j=1:length(approaches)
 end
 latexHeader=sprintf('%s\n%s\n%s\n%s\n','\begin{table}[htp!]','\begin{center}','\begin{tabular}{r|llllll}','\multicolumn{1}{c}{Approach}& \multicolumn{1}{c|}{oMAED} & \multicolumn{1}{c}{bMAED} & \multicolumn{1}{c}{FSSVM} & \multicolumn{1}{c}{Random}\\')
 latexBottom=sprintf('%s\n%s\n%s\n','\end{tabular}','\end{center}','\end{table}');
-
+SRKDA
+SRDA
+SVM
 %oMAED
-sprintf('\\multicolumn{1}{c}{SRKDA}&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f\\',SRKDA(1),stdSRKDA(1),SRKDA(2),stdSRKDA(2),SRKDA(3),stdSRKDA(3),SRKDA(4),stdSRKDA(4),SRKDA(5),stdSRKDA(5))
-sprintf('\\multicolumn{1}{c}{SRDA}&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f\\',SRDA(1),stdSRDA(1),SRDA(2),stdSRDA(2),SRDA(3),stdSRDA(3),SRDA(4),stdSRDA(4),SRDA(5),stdSRDA(5))
-sprintf('\\multicolumn{1}{c}{SVM}&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f\\',SVM(1),stdSVM(1),SVM(2),stdSVM(2),SVM(3),stdSVM(3),SVM(4),stdSVM(4),SVM(5),stdSVM(5))
-sprintf('\\multicolumn{1}{c}{DT}&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f\\',DT(1),stdDT(1),DT(2),stdDT(2),DT(3),stdDT(3),DT(4),stdDT(4),DT(5),stdDT(5))
-sprintf('\\multicolumn{1}{c}{Ridge}&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f\\',Ridge(1),stdRidge(1),Ridge(2),stdRidge(2),Ridge(3),stdRidge(3),Ridge(4),stdRidge(4),Ridge(5),stdRidge(5))
+sprintf('\\multicolumn{1}{c}{SRKDA}&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f\\',SRKDA(1),stdSRKDA(1),SRKDA(2),stdSRKDA(2),SRKDA(3),stdSRKDA(3),(4),stdSRKDA(4))
+sprintf('\\multicolumn{1}{c}{SRDA}&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f\\',SRDA(1),stdSRDA(1),SRDA(2),stdSRDA(2),SRDA(3),stdSRDA(3),SRDA(4),stdSRDA(4))
+sprintf('\\multicolumn{1}{c}{SVM}&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f\\',SVM(1),stdSVM(1),SVM(2),stdSVM(2),SVM(3),stdSVM(3),SVM(4),stdSVM(4))
+sprintf('\\multicolumn{1}{c}{DT}&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f\\',DT(1),stdDT(1),DT(2),stdDT(2),DT(3),stdDT(3),DT(4),stdDT(4))
+sprintf('\\multicolumn{1}{c}{Ridge}&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f\\',Ridge(1),stdRidge(1),Ridge(2),stdRidge(2),Ridge(3),stdRidge(3),Ridge(4),stdRidge(4))
 
 
 % for j=1:length(approaches)

@@ -143,6 +143,6 @@ DTAucs=nanmean(DTAucs);
 stdevDTAucs=nanstd(DTAucs);
 RidgeAucs=nanmean(RidgeAucs);
 stdevRidgeAucs=nanstd(RidgeAucs);
-save(sprintf('%s/auc.mat',outputPath),'SRDAAucs','stdevSRDAAucs','SVMAucs','stdevSVMAucs','DTAucs','stdevDTAucs','RidgeAucs','stdevRidgeAucs','avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
+save(sprintf('%s/auc.mat',outputPath),'SRKDAAucs','stdevSRKDAAucs','SRDAAucs','stdevSRDAAucs','SVMAucs','stdevSVMAucs','DTAucs','stdevDTAucs','RidgeAucs','stdevRidgeAucs','avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
 save(sprintf('%s/results.mat',outputPath),'results');
 end
