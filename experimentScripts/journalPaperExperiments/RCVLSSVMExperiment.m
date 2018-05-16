@@ -138,6 +138,7 @@ stdRuntime=std(runTimes);
 SVMAucs=nanmean(SVMAucs);
 SRDAAucs=nanmean(SRDAAucs);
 stdevSRDAAucs=nanstd(SRDAAucs);
+stdevSRKDAAucs=nanstd(SRKDAAucs);
 stdevSVMAucs=nanstd(SVMAucs);
 DTAucs=nanmean(DTAucs);
 stdevDTAucs=nanstd(DTAucs);
