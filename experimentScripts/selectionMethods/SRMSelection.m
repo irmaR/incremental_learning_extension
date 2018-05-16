@@ -22,7 +22,7 @@ model.K = constructKernel(full(model.X), [], options);
 point=1;
 %save current point
 current_area=inferenceType(model.K,model.X,model.Y,options.test,options.test_class,options);
-[areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings,options)
+[areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings.XTest,settings.YTest,options)
 results.selectedDataPoints{point}=model.X;
 results.selectedLabels{point}=model.Y;
 results.times(point)=toc(starting_count);
@@ -81,7 +81,7 @@ for j=0:settings.batchSize:(size(settings.XTrain,1)-settings.numSelectSamples-se
     newModel.X=full(XClass1);
     newModel.Y=YClass1;
     newModel.K = constructKernel(newModel.X, [], options);
-    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(newModel,settings,options);
+    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(newModel,settings.validation,settings.validationClass,options);
     areaSelection=nanmean([areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]);
     if areaSelection<current_area
         model=oldModel;
@@ -99,9 +99,8 @@ for j=0:settings.batchSize:(size(settings.XTrain,1)-settings.numSelectSamples-se
     %model.K = constructKernel(full(model.X), [], options);
     %area=inferenceType(model.X,model.Y,settings.XTest,settings.YTest,options);
     %area=max(area,1-area);
-    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings,options);
-    
-    current_area=areaSRKDA;
+    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings.XTest,settings.YTest,options);
+    current_area=areaSelection;
     inferenceTime=toc(startInferenceTime);
     if point<=length(settings.reportPoints) && settings.numSelectSamples+j<=settings.reportPoints(point)
         results.selectedDataPoints{point}=model.X;
