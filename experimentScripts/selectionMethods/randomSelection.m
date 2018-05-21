@@ -1,4 +1,4 @@
-function [results]=randomSelection(settings,options,inferenceType)
+function [results]=randomSelection(settings,inferenceType)
 starting_count=tic;
 nrObsPoints=length(settings.reportPoints);
 results.selectedDataPoints=cell(1, nrObsPoints);
@@ -21,13 +21,13 @@ model.X=trainFea(1:settings.numSelectSamples,:);
 model.Y=trainClass(1:settings.numSelectSamples,:);
 point=1;
 
-[model,values] = MAED(model,settings.numSelectSamples,options);
+[model,values] = MAED(model,settings.numSelectSamples,settings);
 %save current point
-current_area=inferenceType(model.K,model.X,model.Y,options.test,options.test_class,options);
-aucTrain=inferenceType(model.K,model.X,model.Y,model.X,model.Y,options);
+current_area=inferenceType(model.K,model.X,model.Y,settings.XTest,settings.YTest,settings);
+aucTrain=inferenceType(model.K,model.X,model.Y,model.X,model.Y,settings);
 current_area=max(current_area,1-current_area);
 aucTrain=max(aucTrain,1-aucTrain);
-[areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings.XTest,settings.YTest,options);
+[areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings.XTest,settings.YTest,settings);
 
 results.selectedKernels{point}=model.K;
 results.selectedDistances{point}=model.D;
@@ -51,7 +51,7 @@ point=point+1;
 
 for j=0:settings.batchSize:(size(settings.XTrain,1)-settings.numSelectSamples-settings.batchSize)
     starting_count1=tic;
-    %fprintf('Fetching %d - %d\t Batch %d\n',settings.numSelectSamples+j+1,settings.numSelectSamples+j+settings.batchSize,j)
+    fprintf('Fetching %d - %d\t Batch %d\n',settings.numSelectSamples+j+1,settings.numSelectSamples+j+settings.batchSize,j)
     XObserved=trainFea(1:settings.numSelectSamples+j+settings.batchSize,:);
     YObserved=trainClass(1:settings.numSelectSamples+j+settings.batchSize,:);
     ix=randperm(size(XObserved,1));
@@ -60,10 +60,10 @@ for j=0:settings.batchSize:(size(settings.XTrain,1)-settings.numSelectSamples-se
     oldModel=model;
     newModel.X=X;
     newModel.Y=Y;
-    [newModel,~] = MAED(newModel,settings.numSelectSamples,options);
+    [newModel,~] = MAED(newModel,settings.numSelectSamples,settings);
     %keep the new model if it improves the auc
     %areaSelection=inferenceType(newModel.K,newModel.X,newModel.Y,settings.validation,settings.validationClass,options);
-    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(newModel,settings.validation,settings.validationClass,options);
+    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(newModel,settings.validation,settings.validationClass,settings);
     areaSelection=nanmean([areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]);
     %areaTrain=inferenceType(newModel.K,newModel.X,newModel.Y,newModel.X,newModel.Y,options);
     areaSelection=max(areaSelection,1-areaSelection);
@@ -83,7 +83,7 @@ for j=0:settings.batchSize:(size(settings.XTrain,1)-settings.numSelectSamples-se
     %get the test AUC given the current model
     %area=inferenceType(model.K,model.X,model.Y,settings.XTest,settings.YTest,options);
     %area=max(area,1-area);
-    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings.XTest,settings.YTest,options);
+    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings.XTest,settings.YTest,settings);
     current_area=areaSelection;
     if point<=length(settings.reportPoints) && settings.numSelectSamples+j<=settings.reportPoints(point)
         results.selectedDataPoints{point}=model.X;

@@ -1,45 +1,36 @@
-function []=two_circles_experiment(method,path_to_results,nr_runs,nr_samples,batch_size,data_limit,warping,blda)
+function []=two_circles_experiment()
 %clear all;
 %close all;
 %clc;
-addpath(genpath('/Users/irma/Documents/MATLAB/incremental_learning'))  
+addpath(genpath('/Users/irma/Documents/MATLAB/incremental_learning'))
+reguBetaParams=[0.01,0.04];
+reguAlphaParams=[0.01,0.04];
+kernelParams=[0.5,5];
+reguGammas=[1];
 
-
-% reguBetaParams=[0.01,0.02];
-% reguAlphaParams=[0.01,0.02];
-% kernel_params=[0.02,0.1];
-
-reguBetaParams=[0.01,0.02,0.04,0.08,0.1,0.2];
-reguAlphaParams=[0.01,0.02,0.04,0.2,0.3];
-kernel_params=[0.01,0.02,0.04,0.5,1,3,5,10];
-
-%reguAlphaParams=[0.3];
-%kernel_params=[0.01];
-
-
-%reguAlphaParams=[0.01];
-%kernel_params=[1];
-
-%nr_samples=50;
-%batch_size=1;
-output_path=sprintf('%s/smp_%d/bs_%d/%s/',path_to_results,nr_samples,batch_size,method);
-fprintf('Making folder %s',output_path)
-mkdir(output_path)
 interval=5;
+nrSamples=20;
+batchSize=40;
+dataLimit=400;
+warping=1;
+blda=1;
+NeighborModes={'Supervised'};
+WeightModes={'HeatKernel','Cosine'}
+ks=[0];
+nrRuns=1;
 
-
-for r=1:nr_runs
+for r=1:nrRuns
     s = RandStream('mt19937ar','Seed',r);
-    rand('twister',r*1000);	
-    [train, train_class] = GenTwoNoisyCircle(100,70,30);
+    rand('twister',r*1000);
+    [train, trainClass] = GenTwoNoisyCircle(500,70);
     rand('twister',r*2*1000);
-    [test, test_class] = GenTwoNoisyCircle(10,60,40);
+    [test, testClass] = GenTwoNoisyCircle(50,60);
     rand('twister',r*3*1000);
-    report_points=[nr_samples:batch_size:size(train,1)-batch_size-interval]
+    reportPoints=[nrSamples:batchSize:size(train,1)-batchSize-interval]
     %shuffle the training data
     ix=randperm(s,size(train,1))';
     train=train(ix,:);
-    train_class=train_class(ix,:);
+    trainClass=trainClass(ix,:);
     %train=NormalizeFea(train);
     %test=NormalizeFea(test);
     train=standardizeX(train);
@@ -47,20 +38,105 @@ for r=1:nr_runs
     %test=train;
     %test_class=train_class;
     rand('twister',r*4*1000);
-    [validation, validation_class] = GenTwoNoisyCircle(10,60,40);
+    [validation, validationClass] = GenTwoNoisyCircle(60,60);
     validation=standardizeX(validation);
-    %validation=NormalizeFea(validation);
-    res=run_experiment(train,train_class,validation,validation_class,test,test_class,reguAlphaParams,reguBetaParams,kernel_params,nr_samples,batch_size,report_points,method,data_limit,r,warping,blda)
-    results{r}=res;
+    
+    settings.XTest=test;
+    settings.markSelPoints=1;
+    settings.YTest=testClass;
+    settings.validation=validation;
+    settings.validationClass=validationClass;
+    settings.XTrain=train;
+    settings.YTrain=trainClass;
+    settings.reguAlphaParams=reguAlphaParams;
+    settings.reguBetaParams=reguBetaParams;
+    settings.reguGammas=reguGammas;
+    settings.kernelParams=kernelParams;
+    settings.kernelType='RBF_kernel';
+    settings.numSelectSamples=nrSamples;
+    settings.batchSize=batchSize;
+    settings.reportPoints=reportPoints;
+    settings.dataLimit=dataLimit;
+    settings.run=1;
+    settings.warping=warping;
+    settings.bLDA=blda;
+    settings.weightMode=WeightModes{1};
+    settings.neighbourMode=NeighborModes{1};
+    settings.ks=ks(1);
+    settings.gamma=1;
+    %settings.outputPath=outputPath;
+    settings.reportPointIndex=1;
+    settings.positiveClass=1;
+    settings.classes=[1,2];
+    resoMAED=runExperiment(settings,'iSRKDA');
+    resbMAED=runExperiment(settings,'SRKDA');
+    resFLSSVM=runExperiment(settings,'lssvm');
+    resSRMS=runExperiment(settings,'srms');
+    resRandom=runExperiment(settings,'random');
+    
+    
+    resultsoMAED{r}=resoMAED;
+    resultsbMAED{r}=resbMAED;
+    resultsFLSSVM{r}=resFLSSVM;
+    resultsSRMS{r}=resSRMS;
+    resultsRandom{r}=resRandom;
 end
+avgAucsoMAED=zeros(1,length(reportPoints));
+avgAucsbMAED=zeros(1,length(reportPoints));
+avgAucsoFLSSVM=zeros(1,length(reportPoints));
+avgAucsoSRMS=zeros(1,length(reportPoints));
+avgAucsoRandom=zeros(1,length(reportPoints));
 
-avg_aucs=zeros(1,length(report_points));
-avg_aucs_lssvm=zeros(1,length(report_points));
-for i=1:nr_runs
- avg_aucs=avg_aucs+results{i}.aucs;
-% avg_aucs_lssvm=avg_aucs_lssvm+results{i}.aucs_lssvm;
+for i=1:nrRuns
+    avgAucsoMAED(i,:)=resultsoMAED{i}.avgAUCs;
+    avgAucsbMAED(i,:)=resultsbMAED{i}.aucs;
+    avgAucsoFLSSVM(i,:)=resultsFLSSVM{i}.aucs;
+    avgAucsoSRMS(i,:)=resultsSRMS{i}.aucs;
+    avgAucsoRandom(i,:)=resultsRandom{i}.aucs;
 end
-avg_aucs=avg_aucs/nr_runs;
-%avg_aucs_lssvm=avg_aucs_lssvm/nr_runs;
-save(sprintf('%s/auc.mat',output_path),'avg_aucs','report_points');
-save(sprintf('%s/results.mat',output_path),'results');
+avgAucsoMAED=nanmean(avgAucsoMAED,1);
+stdAucsoMAED=nanstd(avgAucsoMAED,1);
+
+avgAucsbMAED=nanmean(avgAucsbMAED,1);
+stdAucsbMAED=nanstd(avgAucsbMAED,1);
+
+avgAucsoFLSSVM=nanmean(avgAucsoFLSSVM,1);
+stdAucsoFLSSVM=nanstd(avgAucsoFLSSVM,1);
+
+avgAucsoSRMS=nanmean(avgAucsoSRMS,1);
+stdAucsoSRMS=nanstd(avgAucsoSRMS,1);
+
+avgAucsoRandom=nanmean(avgAucsoRandom,1);
+stdAucsoRandom=nanstd(avgAucsoRandom,1);
+
+
+outputPath=sprintf('%s/smp_%d/bs_%d/%s/%s/k_%d/%s/',pathToResults,nrSamples,batchSize,NeighborModes{1},WeightModes{1},ks(1),'iSRKDA');
+fprintf('Making folder %s',outputPath)
+mkdir(outputPath)
+save(sprintf('%s/auc.mat',outputPath),'avgAucsoMAED','stdAucsoMAED','report_points');
+save(sprintf('%s/results.mat',outputPath),'resultsoMAED');
+
+outputPath=sprintf('%s/smp_%d/bs_%d/%s/%s/k_%d/%s/',pathToResults,nrSamples,batchSize,NeighborModes{1},WeightModes{1},ks(1),'SRKDA');
+fprintf('Making folder %s',outputPath)
+mkdir(outputPath)
+save(sprintf('%s/auc.mat',outputPath),'avgAucsbMAED','avgAucsbMAED','report_points');
+save(sprintf('%s/results.mat',outputPath),'resultsbMAED');
+
+outputPath=sprintf('%s/smp_%d/bs_%d/%s/%s/k_%d/%s/',pathToResults,nrSamples,batchSize,NeighborModes{1},WeightModes{1},ks(1),'lssvm');
+fprintf('Making folder %s',outputPath)
+mkdir(outputPath)
+save(sprintf('%s/auc.mat',outputPath),'avgAucsoFLSSVM','stdAucsoFLSSVM','report_points');
+save(sprintf('%s/results.mat',outputPath),'resultsFLSSVM');
+
+outputPath=sprintf('%s/smp_%d/bs_%d/%s/%s/k_%d/%s/',pathToResults,nrSamples,batchSize,NeighborModes{ns},WeightModes{ws},ks(kNN),'srms');
+fprintf('Making folder %s',outputPath)
+mkdir(outputPath)
+save(sprintf('%s/auc.mat',outputPath),'avgAucsoSRMS','stdAucsoSRMS','report_points');
+save(sprintf('%s/results.mat',outputPath),'resultsSRMS');
+
+outputPath=sprintf('%s/smp_%d/bs_%d/%s/%s/k_%d/%s/',pathToResults,nrSamples,batchSize,NeighborModes{ns},WeightModes{ws},ks(kNN),'random');
+fprintf('Making folder %s',outputPath)
+mkdir(outputPath)
+save(sprintf('%s/auc.mat',outputPath),'avgAucsoRandom','stdAucsoRandom','report_points');
+save(sprintf('%s/results.mat',outputPath),'resultsRandom');
+

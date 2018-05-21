@@ -1,32 +1,26 @@
 function [results]=randomMethod(settings,inferenceType)
 start_tuning=tic;
-[reguAlpha,reguBeta,kernelSigma]=tuneParams(settings,inferenceType);
+[reguAlpha,reguBeta,kernelSigma]=tuneParams(settings,@MAEDIncremental,inferenceType);
 tuningTime=toc(start_tuning)
-
-options = [];
-options.KernelType = 'Gaussian';
-options.t = kernelSigma;
-options.kernel_type = 'RBF_kernel';
-options.kernel = kernelSigma;
-options.gamma=1;
-options.bLDA=settings.balanced;
-options.ReguBeta=reguBeta;
-options.ReguAlpha = reguAlpha;
-options.k=settings.ks;
-options.WeightMode=settings.weightMode;
-options.NeighborMode=settings.neighbourMode;
-options.test=settings.XTest;
-options.test_class=settings.YTest;
-options.positiveClass=settings.positiveClass;
-options.classes=settings.classes;
-sprintf('Run %d, Alpha: %f, Sigma: %f',settings.run,options.ReguAlpha,options.t)
-%measure time
+if ~isfield(settings,'reportPointIndex')
+    settings.reportPointIndex=1;
+end
+if ~isfield(settings,'initSample')
+    settings.initSample=[];
+end
+if ~isfield(settings,'initClass')
+    settings.initClass=[];
+end
+settings.kernel = kernelSigma;
+settings.ReguBeta=reguBeta;
+settings.ReguAlpha = reguAlpha;
+settings.t=kernelSigma;
+options.kernel=kernelSigma;
+options.reguBeta=reguBeta;
+options.reguAlpha=reguAlpha;
 tic;
 best_options=options;
-%shuffle data
-s = RandStream('mt19937ar','Seed',settings.run);
-fprintf('Running the learning...')
-[results]=randomSelection(settings,options,inferenceType);
+[results]=randomSelection(settings,inferenceType);
 results.tuningTime=tuningTime;
 results.bestOptions=best_options;
 results.reguAlpha=reguAlpha;

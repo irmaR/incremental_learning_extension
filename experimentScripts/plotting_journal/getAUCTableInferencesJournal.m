@@ -1,4 +1,4 @@
-function []= getAUCTableInferences(pathToResults,samplesN,batchSize,approaches,specificResult,outputPath)
+function []= getAUCTableInferencesJorunal(pathToResults,samplesN,batchSize,approaches,specificResult,outputPath)
 aucs=containers.Map('KeyType','int32','ValueType','Any')
 counter=1;
 apprAuc={};
@@ -15,11 +15,11 @@ stdDT=[];
 stdRidge=[];
 
 for j=1:length(approaches)
-    %if strcmp(approaches{j},'lssvm')
-    %    paths=sprintf('%s/smp_%d/bs_%d/%s/auc.mat',pathToResults,samplesN,batchSize,approaches{j});
-    %else
+    if strcmp(approaches{j},'lssvm')
+        paths=sprintf('%s/smp_%d/bs_%d/%s/auc.mat',pathToResults,samplesN,batchSize,approaches{j});
+    else
         paths=sprintf('%s/smp_%d/bs_%d/%s/%s/auc.mat',pathToResults,samplesN,batchSize,specificResult,approaches{j});
-    %end
+    end
     sprintf('PATH: %s',paths),exist(paths, 'file')
     if exist(paths, 'file')
         auc=load(paths)
@@ -61,7 +61,7 @@ SRKDA
 SRDA
 SVM
 %oMAED
-sprintf('\\multicolumn{1}{c}{SRKDA}&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f\\',SRKDA(1),stdSRKDA(1),SRKDA(2),stdSRKDA(2),SRKDA(3),stdSRKDA(3),(4),stdSRKDA(4))
+sprintf('\\multicolumn{1}{c}{SRKDA}&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f\\',SRKDA(1),stdSRKDA(1),SRKDA(2),stdSRKDA(2),SRKDA(3),stdSRKDA(3),SRKDA(4),stdSRKDA(4))
 sprintf('\\multicolumn{1}{c}{SRDA}&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f\\',SRDA(1),stdSRDA(1),SRDA(2),stdSRDA(2),SRDA(3),stdSRDA(3),SRDA(4),stdSRDA(4))
 sprintf('\\multicolumn{1}{c}{SVM}&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f\\',SVM(1),stdSVM(1),SVM(2),stdSVM(2),SVM(3),stdSVM(3),SVM(4),stdSVM(4))
 sprintf('\\multicolumn{1}{c}{DT}&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f&%0.2f$\\pm$%0.3f\\',DT(1),stdDT(1),DT(2),stdDT(2),DT(3),stdDT(3),DT(4),stdDT(4))

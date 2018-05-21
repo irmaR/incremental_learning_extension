@@ -7,9 +7,9 @@ if length(settings.reguGammas)==1 && length(settings.kernelParams)==1
 else
 for i=1:length(settings.reguGammas)
     for j=1:length(settings.kernelParams)
-        options.gamma=settings.reguGammas(j);
-        options.kernel=settings.kernelParams(i);
-        options.kernel_type=kernel_type;
+        settings.gamma=settings.reguGammas(i);
+        settings.kernel=settings.kernelParams(j);
+        settings.kernel_type=kernel_type;
         %split training data into 5 folds for tuning the parameters
         folds=split_into_k_folds(settings.XTrain,settings.YTrain,5);
         performances=[];
@@ -38,11 +38,11 @@ for i=1:length(settings.reguGammas)
             options.test_class=folds{k}.test_class;
             oldReportPoints=settings.reportPoints;
             settings.reportPoints=report_points_up;
-            [res]=FSLSSVM(settings,options,@lssvmInference);
+            [res]=FSLSSVM(settings,@lssvmInference);
             settings.reportPoints=oldReportPoints;
             aucs=[];
             for s=1:size(res.selectedDataPoints,1)
-                area=lssvmInference(cell2mat(res.selectedDataPoints(s)),cell2mat(res.selectedLabels(s)),options.test,options.test_class,options);
+                area=lssvmInference(cell2mat(res.selectedDataPoints(s)),cell2mat(res.selectedLabels(s)),settings.XTest,settings.YTest,settings);
                 fprintf('Area %f\t\n',area)
                 aucs(s)=area;
             end
@@ -50,7 +50,7 @@ for i=1:length(settings.reguGammas)
             %end
         end
         area=mean(performances);
-        validation_res(i,j,b)=area;
+        validation_res(i,j)=area;
     end
 end
 %Get best options
@@ -60,7 +60,7 @@ end
 ic=ic(is);
 is=is(:,:,is1);
 ic=ic(:,:,is1);
-kernel = kernel_params(ic);
-gamma = gamma_params(is);
+kernel = settings.kernelParams(ic);
+gamma = settings.reguGammas(is);
 end
 end

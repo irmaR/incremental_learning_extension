@@ -7,17 +7,11 @@ else
     for i=1:length(settings.reguAlphaParams)
         for j=1:length(settings.kernelParams)
             for b=1:length(settings.reguBetaParams)
-                options = [];
-                options.KernelType = 'Gaussian';
-                options.t = settings.kernelParams(j);
-                options.bLDA=settings.balanced;
-                options.ReguType = 'Ridge';
-                options.ReguBeta=settings.reguBetaParams(b);
-                options.ReguAlpha = settings.reguAlphaParams(i);
-                options.k=settings.ks;
-                options.WeightMode=settings.weightMode;
-                options.NeighborMode=settings.neighbourMode;
-                sprintf('Run %d, Alpha: %f, Sigma: %f',settings.run,options.ReguAlpha,options.t)
+                settings.ReguBeta=settings.reguBetaParams(b);
+                settings.ReguType = 'Ridge';
+                settings.ReguAlpha = settings.reguAlphaParams(i);
+                settings.kernel=settings.kernelParams(j);
+                settings.t=settings.kernelParams(j);
                 %split training data into 5 folds for tuning the parameters
                 folds=split_into_k_folds(settings.XTrain,settings.YTrain,5);
                 performances=[];
@@ -42,12 +36,12 @@ else
                     ix=randperm(s,size(train_batch,1))';
                     train_batch=train_batch(ix,:);
                     train_batch_class=train_batch_class(ix,:);
-                    options.test=folds{k}.test;
-                    options.test_class=folds{k}.test_class;                   
-                    [res]=methodType(settings,options,inferenceType);                    
+                    settings.XTest=folds{k}.test;
+                    settings.YTest=folds{k}.test_class;
+                    [res]=methodType(settings,inferenceType);
                     aucs=[];
                     for s=1:size(res.selectedKernels,1)
-                        area=inferenceType(cell2mat(res.selectedKernels(s)),cell2mat(res.selectedDataPoints(s)),cell2mat(res.selectedLabels(s)),folds{k}.test,folds{k}.test_class,options);
+                        area=inferenceType(cell2mat(res.selectedKernels(s)),cell2mat(res.selectedDataPoints(s)),cell2mat(res.selectedLabels(s)),folds{k}.test,folds{k}.test_class,settings);
                         fprintf('Area %f\t\n',area)
                         aucs(s)=area;
                     end

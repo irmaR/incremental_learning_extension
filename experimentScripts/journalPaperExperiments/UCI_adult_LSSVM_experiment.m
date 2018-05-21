@@ -20,8 +20,6 @@ for r=1:nrRuns
     %standardize the training and test data
     [trainData,min_train,max_train]=standardizeX(trainData);
     testData=standardize(test,min_train,max_train);
-    trainClass(trainClass~=1)=-1;
-    trainClass(trainClass==2)=1;
     %I need validation data (a random subset of train data for
     %model selection)
     validation=trainData(1:2000,:);
@@ -36,28 +34,30 @@ for r=1:nrRuns
     testClass=test_class(ix(1:1000),:);
     
     
-    testClass(testClass~=1)=-1;
-    testClass(testClass==2)=1;
-    
-    fprintf('Number of training data points %d-%d, class %d\n',size(trainData,1),size(trainData,2),size(train_class,1));
-    fprintf('Number of test data points %d-%d\n',size(test,1),size(test,2));
+    fprintf('Number of training data points %d-%d, class %d\n',size(trainData,1),size(trainData,2),size(trainClass,1));
+    fprintf('Number of test data points %d-%d\n',size(testData,1),size(testData,2));
     reportPoints=[nrSamples:batchSize:size(trainData,1)-batchSize];
     
     settings.XTest=testData;
+    settings.markSelPoints=1;
     settings.YTest=testClass;
-    settings.XTrain=trainData;
-    settings.YTrain=trainClass;
-    settings.numSelectSamples=nrSamples;
-    settings.batchSize=batchSize;
     settings.validation=validation;
     settings.validationClass=validationClass;
+    settings.XTrain=trainData;
+    settings.YTrain=trainClass;
+    settings.kernelParams=kernelParams;
+    settings.numSelectSamples=nrSamples;
+    settings.batchSize=batchSize;
     settings.reportPoints=reportPoints;
     settings.dataLimit=dataLimit;
-    settings.outputPath=outputPath;
-    settings.reportPointIndex=1;
     settings.run=r;
     settings.reguGammas=reguGammas;
-    settings.kernelParams=kernelParams;
+    settings.kernelType='RBF_kernel';
+    settings.gamma=1;
+    settings.outputPath=outputPath;
+    settings.reportPointIndex=1;
+    settings.positiveClass=1;
+    settings.classes=[1,2];
     
     fprintf('Number of report points:%d',length(reportPoints))
     %we don't use validation here. We tune parameters on training data
@@ -66,44 +66,29 @@ for r=1:nrRuns
     results{r}=res;
     %save intermediate results just in case
     save(sprintf('%s/results.mat',outputPath),'results');
-    avgAucs=zeros(1,length(reportPoints));
-    realAvgAUCs=zeros(1,length(reportPoints));
-    for i=1:r
-        size(cell2mat(results{i}.selectedAUCs))
-        size(reportPoints)
-        avgAucs=avgAucs+cell2mat(results{i}.selectedAUCs);
-        realAvgAUCs=realAvgAUCs+cell2mat(results{i}.AUCs);
-        allAucs(i,:)=cell2mat(results{i}.selectedAUCs);
-        allRealAucs(i,:)=cell2mat(results{i}.AUCs);
-        runTimes(i,:)=results{i}.runtime+results{i}.tuningTime;
-        processingTimes(i,:)=results{i}.processingTimes;
-    end
-    stdev=std(allAucs);
-    stdevReal=std(allRealAucs);
-    avgAucs=avgAucs/nrRuns;
-    realAvgAUCs=realAvgAUCs/nrRuns;
-    avgRuntime=mean(runTimes);
-    stdRuntime=std(runTimes);
-    save(sprintf('%s/auc.mat',outputPath),'avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
 end
-
-avgAucs=zeros(1,length(reportPoints));
-realAvgAUCs=zeros(1,length(reportPoints));
 for i=1:nrRuns
-    avgAucs=avgAucs+cell2mat(results{i}.selectedAUCs);
-    realAvgAUCs=realAvgAUCs+cell2mat(results{i}.AUCs);
-    allAucs(i,:)=cell2mat(results{i}.selectedAUCs);
-    allRealAucs(i,:)=cell2mat(results{i}.AUCs);
+    SRKDAAucs(i,:)=cell2mat(results{i}.SRKDAAucs);
+    SVMAucs(i,:)=cell2mat(results{i}.SVMAUCs);
+    DTAucs(i,:)=cell2mat(results{i}.DTAUCs);
+    SRDAAucs(i,:)=cell2mat(results{i}.SRDAAUC);
+    RidgeAucs(i,:)=cell2mat(results{i}.RidgeAUCs);
     runTimes(i,:)=results{i}.runtime+results{i}.tuningTime;
     processingTimes(i,:)=results{i}.processingTimes;
 end
-stdev=std(allAucs);
-stdevReal=std(allRealAucs);
-avgAucs=avgAucs/nrRuns;
-realAvgAUCs=realAvgAUCs/nrRuns;
+stdevReal=nanstd(SRKDAAucs);
+SRKDAAucs=nanmean(SRKDAAucs,1);
 avgRuntime=mean(runTimes);
 stdRuntime=std(runTimes);
-save(sprintf('%s/auc.mat',outputPath),'avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
+SVMAucs=nanmean(SVMAucs);
+SRDAAucs=nanmean(SRDAAucs);
+stdevSRDAAucs=nanstd(SRDAAucs);
+stdevSRKDAAucs=nanstd(SRKDAAucs);
+stdevSVMAucs=nanstd(SVMAucs);
+DTAucs=nanmean(DTAucs);
+stdevDTAucs=nanstd(DTAucs);
+RidgeAucs=nanmean(RidgeAucs);
+stdevRidgeAucs=nanstd(RidgeAucs);
+save(sprintf('%s/auc.mat',outputPath),'SRKDAAucs','stdevSRKDAAucs','SRDAAucs','stdevSRDAAucs','SVMAucs','stdevSVMAucs','DTAucs','stdevDTAucs','RidgeAucs','stdevRidgeAucs','reportPoints','avgRuntime','stdRuntime','processingTimes');
 save(sprintf('%s/results.mat',outputPath),'results');
 end
-

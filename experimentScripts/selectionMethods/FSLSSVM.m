@@ -1,4 +1,4 @@
-function [results]=FSLSSVM(settings,options,inferenceType)
+function [results]=FSLSSVM(settings,inferenceType)
 starting_count=tic;
 nrObsPoints=length(settings.reportPoints);
 results.selectedDataPoints=cell(1, nrObsPoints);
@@ -18,13 +18,11 @@ trainFea=settings.XTrain;
 trainClass=settings.YTrain;
 model.X=full(trainFea(1:settings.numSelectSamples,:));
 model.Y=trainClass(1:settings.numSelectSamples,:);
-model.K = constructKernel(model.X, [], options);
+model.K = constructKernel(model.X, [], settings);
 point=1;
 %save current point
-size(model.K)
-model.K
-current_area=inferenceType(model.X,model.Y,options.test,options.test_class,options);
-[areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings.XTest,settings.YTest,options)
+current_area=inferenceType(model.X,model.Y,settings.XTest,settings.YTest,settings);
+[areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings.XTest,settings.YTest,settings)
 results.selectedDataPoints{point}=model.X;
 results.selectedLabels{point}=model.Y;
 results.times(point)=toc(starting_count);
@@ -73,17 +71,17 @@ for j=0:settings.batchSize:(size(settings.XTrain,1)-settings.numSelectSamples-se
     YObservedClass2=YObserved(ix_up_class2,:);
     
     %find representatives for class1
-    [XClass1,YClass1]=FSLSSVMBalanced(XObservedClass1,YObservedClass1,nr_samples1,options);
-    [XClass2,YClass2]=FSLSSVMBalanced(XObservedClass2,YObservedClass2,nr_samples2,options);
+    [XClass1,YClass1]=FSLSSVMBalanced(XObservedClass1,YObservedClass1,nr_samples1,settings);
+    [XClass2,YClass2]=FSLSSVMBalanced(XObservedClass2,YObservedClass2,nr_samples2,settings);
     startInferenceTime=tic;
     oldModel=model;
     %Nc=settings.numSelectSamples;
     
     newModel.X=[XClass1;XClass2];
     newModel.Y=[YClass1;YClass2];
-    newModel.K = constructKernel(full(newModel.X), [], options);
+    newModel.K = constructKernel(full(newModel.X), [], settings);
     %areaSelection=inferenceType(newModel.X,newModel.Y,settings.validation,settings.validationClass,options);
-    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(newModel,settings.validation,settings.validationClass,options);
+    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(newModel,settings.validation,settings.validationClass,settings);
     areaSelection=nanmean([areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]);
     areaSelection=max(areaSelection,1-areaSelection);
     if areaSelection<current_area
@@ -99,10 +97,10 @@ for j=0:settings.batchSize:(size(settings.XTrain,1)-settings.numSelectSamples-se
         model=newModel;
     end
     %get the test AUC given the current model
-    model.K = constructKernel(full(model.X), [], options);
-    area=inferenceType(model.X,model.Y,settings.XTest,settings.YTest,options);
+    model.K = constructKernel(full(model.X), [], settings);
+    area=inferenceType(model.X,model.Y,settings.XTest,settings.YTest,settings);
     area=max(area,1-area);
-    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings.XTest,settings.YTest,options);
+    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings.XTest,settings.YTest,settings);
     
     current_area=areaSelection;
     inferenceTime=toc(startInferenceTime);

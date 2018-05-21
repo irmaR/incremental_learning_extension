@@ -1,4 +1,4 @@
-function [results]=MAEDIncremental(settings,options,inferenceType)
+function [results]=MAEDIncremental(settings,inferenceType)
 starting_count=tic;
 fprintf('Entering here with results')
 nrObsPoints=length(settings.reportPoints);
@@ -21,13 +21,13 @@ trainClass=settings.YTrain;
 model.X=trainFea(1:settings.numSelectSamples,:);
 model.Y=trainClass(1:settings.numSelectSamples,:);
 point=1;
-[model,values] = MAED(model,settings.numSelectSamples,options);
+[model,values] = MAED(model,settings.numSelectSamples,settings);
 %save current point
-current_area=inferenceType(model.K,model.X,model.Y,options.test,options.test_class,options);
-aucTrain=inferenceType(model.K,model.X,model.Y,model.X,model.Y,options);
+current_area=inferenceType(model.K,model.X,model.Y,settings.XTest,settings.YTest,settings);
+aucTrain=inferenceType(model.K,model.X,model.Y,model.X,model.Y,settings);
 current_area=max(current_area,1-current_area);
 aucTrain=max(aucTrain,1-aucTrain);
-[areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings.XTest,settings.YTest,options)
+[areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings.XTest,settings.YTest,settings)
 results.selectedKernels{point}=model.K;
 results.selectedDistances{point}=model.D;
 results.selectedDataPoints{point}=model.X;
@@ -55,17 +55,17 @@ for j=0:settings.batchSize:(size(trainFea,1)-settings.numSelectSamples-settings.
     XNew=trainFea(settings.numSelectSamples+j+1:settings.numSelectSamples+j+settings.batchSize,:);
     YNew=trainClass(settings.numSelectSamples+j+1:settings.numSelectSamples+j+settings.batchSize,:);
     oldModel=model;
-    if settings.balanced
+    if settings.bLDA
         fprintf('balanced')
-        newModel=incrementalUpdateModelBalanced(model,options,XNew,YNew,settings.numSelectSamples);
+        newModel=incrementalUpdateModelBalanced(model,settings,XNew,YNew,settings.numSelectSamples);
     else
-        newModel = MAEDRankIncremental(model,XNew,YNew,settings.numSelectSamples,options);
+        newModel = MAEDRankIncremental(model,XNew,YNew,settings.numSelectSamples,settings);
     end
     %keep the new model if it improves the auc
     startInferenceTime=tic;
     %areaSelection=inferenceType(newModel.K,newModel.X,newModel.Y,settings.validation,settings.validationClass,options);    %areaTrain=inferenceType(newModel.K,newModel.X,newModel.Y,newModel.X,newModel.Y,options);
     %areaSelection=srdaInference(newModel.K,newModel.X,newModel.Y,settings.validation,settings.validationClass,options); 
-    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(newModel,settings.validation,settings.validationClass,options);
+    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(newModel,settings.validation,settings.validationClass,settings);
     areaSelection=nanmean([areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]);
     areaTrain=-1;
     areaSelection=max(areaSelection,1-areaSelection);
@@ -82,7 +82,7 @@ for j=0:settings.batchSize:(size(trainFea,1)-settings.numSelectSamples-settings.
         model=newModel;
     end
     %get the test AUC given the current model
-    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings.XTest,settings.YTest,options);
+    [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings.XTest,settings.YTest,settings);
     inferenceTime=toc(startInferenceTime);
     current_area=areaSelection;
     if point<=length(settings.reportPoints) && settings.numSelectSamples+j<=settings.reportPoints(point)

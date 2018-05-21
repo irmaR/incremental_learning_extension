@@ -1,9 +1,9 @@
-function [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,XData,YData,options)
-    areaSRKDA=srkdaInference(model.K,model.X,model.Y,XData,YData,options);
-    areaSRDA=srdaInference(model.K,model.X,model.Y,XData,YData,options);
-    areaDT=trainDT(model.X,model.Y,XData,YData,options.classes,options.positiveClass);
-    areaSVM=lssvmInference(model.X,model.Y,XData,YData,options);
-    areaRidge=trainRidge(model.X,model.Y,XData,YData,options.classes,options.positiveClass);
+function [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,XData,YData,settings)
+    areaSRKDA=srkdaInference(model.K,model.X,model.Y,XData,YData,settings);
+    areaSRDA=srdaInference(model.K,model.X,model.Y,XData,YData,settings);
+    areaDT=trainDT(model.X,model.Y,XData,YData,settings.classes,settings.positiveClass);
+    areaSVM=lssvmInference(model.X,model.Y,XData,YData,settings);
+    areaRidge=trainRidge(model.X,model.Y,XData,YData,settings.classes,settings.positiveClass);
     areaSRKDA=max(areaSRKDA,1-areaSRKDA);
     areaSRDA=max(areaSRDA,1-areaSRDA);
     areaDT=max(areaDT,1-areaDT);

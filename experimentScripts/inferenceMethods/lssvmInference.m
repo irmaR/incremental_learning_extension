@@ -4,7 +4,7 @@ gamma=1;
 %Hoewever, SVM assumes classes are 1 and -1. So I need to change that here.
 selectedtrainLabels(selectedtrainLabels==2)=-1;
 testLabels(testLabels==2)=-1;
-features = AFEm(selectedtrainFea,options.kernel_type, options.kernel,selectedtrainFea);
+features = AFEm(selectedtrainFea,options.kernelType, options.kernel,selectedtrainFea);
 try,
     [CostL3, gamma_optimal] = bay_rr(features,selectedtrainLabels,options.gamma,1);
 catch,
@@ -12,7 +12,7 @@ catch,
     gamma_optimal = gamma;
 end
 [w,b] = ridgeregress(features,selectedtrainLabels,options.gamma);
-Yh0 = AFEm(selectedtrainFea,options.kernel_type, options.kernel,testFea)*w+b;
+Yh0 = AFEm(selectedtrainFea,options.kernelType, options.kernel,testFea)*w+b;
 echo off;
 [area,se,thresholds,oneMinusSpec,Sens]=roc(Yh0,testLabels);
 end
