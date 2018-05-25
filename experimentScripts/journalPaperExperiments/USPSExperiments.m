@@ -65,10 +65,21 @@ for ns=1:length(NeighborModes)
                     %for each category in train class we run one learning/inference
                     %procedure. We calculate AUCs and we average then
                     fprintf('Number of training data points %d-%d, class %d\n',size(trainData,1),size(trainData,2),size(trainClass,1));
-                    trainClass(trainClass~=c)=-1;
-                    trainClass(trainClass==c)=1;
-                    testClass(testClass~=c)=-1;
-                    testClass(testClass==c)=1;
+                    for v=1:size(trainClass,1)
+                        if trainClass(v,:)==c
+                            trainClass(v,:)=1;
+                        else
+                            trainClass(v,:)=2;
+                        end
+                    end
+                    
+                    for v=1:size(testClass,1)
+                        if testClass(v,:)==c
+                            testClass(v,:)=1;
+                        else
+                            testClass(v,:)=2;
+                        end
+                    end
                     validation=trainData(1:2000,:);
                     validationClass=trainClass(1:2000,:);
                     trainData=trainData(2001:end,:);
@@ -91,58 +102,81 @@ for ns=1:length(NeighborModes)
                     settings.dataLimit=dataLimit;
                     settings.run=r;
                     settings.warping=warping;
-                    settings.balanced=balanced;
+                    settings.bLDA=balanced;
+                    settings.kernelType='RBF_kernel';
+                    settings.gamma=1;
                     settings.weightMode=WeightModes{ws};
                     settings.neighbourMode=NeighborModes{ns};
                     settings.ks=ks(kNN);
-                    settings.outputPath=outputPath;                   
-                    settings.reportPointIndex=0;                    
-                    res1=runExperiment(settings,method)     
+                    settings.outputPath=outputPath;
+                    settings.reportPointIndex=0;
+                    settings.positiveClass=1;
+                    settings.classes=[1,2];
+                    res1=runExperiment(settings,method)
                     sprintf('Selected aucs 1')
-                    res1.selectedAUCs
-                    size(cell2mat(res1.selectedAUCs))
                     selectedAUCs(c,:)=cell2mat(res1.selectedAUCs);
-                    realAUCs(c,:)=cell2mat(res1.AUCs);
+                    SRKDAAucs(c,:)=cell2mat(res1.SRKDAAucs);
+                    SVMAucs(c,:)=cell2mat(res1.SVMAUCs);
+                    RidgeAucs(c,:)=cell2mat(res1.RidgeAUCs);
+                    SRDAAucs(c,:)=cell2mat(res1.SRDAAUC);
+                    DTAucs(c,:)=cell2mat(res1.DTAUCs);
                     tuningTime(c,:)=res1.tuningTime;
                     runtime(c,:)=res1.runtime;
                     processingTime(c,:)=res1.processingTimes;
                 end
-                sprintf('Selected aucs')
-                size(selectedAUCs)
+                res.SVMAucs=nanmean(SVMAucs);
+                res.SRDAAucs=nanmean(SRDAAucs);
+                res.DTAucs=nanmean(DTAucs);
+                res.RidgeAucs=nanmean(RidgeAucs);
+                res.stdevSVMAuc=nanstd(SVMAucs);
+                res.stdevDTAucs=nanstd(DTAucs);
+                res.stdevRidgeAucs=nanstd(RidgeAucs);
+                res.stdevSRDAAucs=nanstd(SRDAAucs);
                 res.avgAUCs=nanmean(selectedAUCs);
-                res.avgRealAUCs=nanmean(realAUCs);
-                res.stdevRealAucs=nanstd(realAUCs);
+                res.SRKDAAucs=nanmean(SRKDAAucs);
+                res.stdevRealAucs=nanstd(SRKDAAucs);
                 res.stdevAucs=nanstd(selectedAUCs);
                 res.reportPoints=reportPoints;
-                res.tuningTime=nanmean(tuningTime);
-                res.stdevTuningTime=nanstd(tuningTime);
-                res.runtime=nanmean(runtime);
-                res.stdevRuntime=nanstd(runtime);
-                res.processingTime=nanmean(processingTime);
-                res.avgRuntime=nanmean(runtime);
-                res.stdRuntime=nanstd(runtime);
+                res.tuningTime=mean(tuningTime);
+                res.stdevTuningTime=std(tuningTime);
+                res.runtime=mean(runtime);
+                res.stdevRuntime=std(runtime);
+                res.processingTime=mean(processingTime);
+                res.avgRuntime=mean(runtime);
+                res.stdRuntime=std(runtime);
                 save(sprintf('%s/res.mat',outputPath),'res');
                 results{r}=res;
             end
-            length(reportPoints)
-            length(results{i}.avgAUCs)
             avgAucs=zeros(1,length(reportPoints));
             realAvgAUCs=zeros(1,length(reportPoints));
             for i=1:nrRuns
-                avgAucs=avgAucs+results{i}.avgAUCs;               
-                realAvgAUCs=realAvgAUCs+results{i}.avgRealAUCs;
+                avgAucs(i,:)=results{i}.avgAUCs;
+                SRKDAAucs(i,:)=results{i}.SRKDAAucs;
+                SVMAucs(i,:)=results{i}.SVMAucs;
+                DTAucs(i,:)=results{i}.DTAucs;
+                SRDAAucs(i,:)=results{i}.SRDAAucs;
+                RidgeAucs(i,:)=results{i}.RidgeAucs;
                 allAucs(i,:)=results{i}.avgAUCs;
-                allRealAucs(i,:)=results{i}.avgRealAUCs;
+                allRealAucs(i,:)=results{i}.SRKDAAucs;
                 runTimes(i,:)=results{i}.runtime+results{i}.tuningTime;
                 processingTimes(i,:)=results{i}.processingTime;
             end
             stdev=nanstd(allAucs);
-            stdevReal=nanstd(allRealAucs);
-            avgAucs=avgAucs/nrRuns;
-            realAvgAUCs=realAvgAUCs/nrRuns;
-            avgRuntime=nanmean(runTimes);
-            stdRuntime=nanstd(runTimes);
-            save(sprintf('%s/auc.mat',outputPath),'avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
+            stdevReal=nanstd(SRKDAAucs);
+            avgAucs=nanmean(avgAucs,1)
+            SRKDAAucs=nanmean(SRKDAAucs,1);
+            avgRuntime=mean(runTimes);
+            stdRuntime=std(runTimes);
+            SVMAucs=nanmean(SVMAucs);
+            SRDAAucs=nanmean(SRDAAucs);
+            stdevSRDAAucs=nanstd(SRDAAucs);
+            stdevSRKDAAucs=nanstd(SRKDAAucs);
+            stdevSVMAucs=nanstd(SVMAucs);
+            DTAucs=nanmean(DTAucs);
+            stdevDTAucs=nanstd(DTAucs);
+            RidgeAucs=nanmean(RidgeAucs);
+            stdevRidgeAucs=nanstd(RidgeAucs);
+            save(sprintf('%s/auc.mat',outputPath),'SRKDAAucs','stdevSRKDAAucs','SRDAAucs','stdevSRDAAucs','SVMAucs','stdevSVMAucs','DTAucs','stdevDTAucs','RidgeAucs','stdevRidgeAucs','avgAucs','realAvgAUCs','stdev','stdevReal','reportPoints','avgRuntime','stdRuntime','processingTimes');
             save(sprintf('%s/results.mat',outputPath),'results');
         end
     end
