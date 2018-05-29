@@ -23,9 +23,10 @@ indices=settings.indicesOffsetTrain(1:settings.numSelectSamples);
 point=1;
 [model,values] = MAED(model,settings.numSelectSamples,options);
 %save current point
-current_area=SRDASequential(model.X,model.Y,settings,options,settings.indicesOffsetTest,settings.XTestFileID);
-
-%current_area=inferenceType(model.K,model.X,model.Y,settings,settings,options);
+area1=SRDASequential(model.X,model.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
+area2=SVMSelectionSequential(model.X,model.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
+current_area=nanmean([area1,area2]);
+current_area=max(current_area,1-current_area);
 aucTrain=-1;
 current_area=max(current_area,1-current_area);
 aucTrain=max(aucTrain,1-aucTrain);
@@ -66,9 +67,12 @@ while 1
     %improves the performance
     time1=toc(starting_count);
     %areaSelection=log_reg_validation(newModel.K,newModel.X,newModel.Y,settings,settings,options);
-    areaSelection=SRDASequential(newModel.X,newModel.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
-    areaTrain=-1;
+    area1=SRDASequential(newModel.X,newModel.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
+    area2=SVMSelectionSequential(newModel.X,newModel.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
+    areaSelection=nanmean([area1,area2]);
     areaSelection=max(areaSelection,1-areaSelection);
+    fprintf('Area selection %f, current area %f\n',areaSelection,current_area);
+    areaTrain=-1;
     
     if areaSelection<current_area
         model=oldModel;
@@ -78,9 +82,9 @@ while 1
     end
     %get the test AUC given the current model
     area=SRDASequential(model.X,model.Y,settings,options,settings.indicesOffsetTest,settings.XTestFileID);
-    areaSVM=SVMSequential(model.X,model.Y,settings,options,settings.indicesOffsetTest,settings.XTestFileID);
-    area=max(area,1-area);
-    areaSVM=max(areaSVM,1-areaSVM);
+    areaSVM=SVMsequential(model.X,model.Y,settings,options);
+    area=max(area,1-area)
+    areaSVM=max(areaSVM,1-areaSVM)
 
     if point<=length(settings.reportPoints)
         results.selectedDataPoints{point}=model.X;
