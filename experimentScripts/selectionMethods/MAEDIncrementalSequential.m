@@ -69,12 +69,7 @@ while 1
     areaSelection=SRDASequential(newModel.X,newModel.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
     areaTrain=-1;
     areaSelection=max(areaSelection,1-areaSelection);
-    if areaSelection<current_area
-        model=oldModel;
-    else
-        current_area=areaSelection;
-        model=newModel;
-    end
+    
     if areaSelection<current_area
         model=oldModel;
     else
@@ -83,7 +78,9 @@ while 1
     end
     %get the test AUC given the current model
     area=SRDASequential(model.X,model.Y,settings,options,settings.indicesOffsetTest,settings.XTestFileID);
-    area=max(area,1-area)
+    areaSVM=SVMSequential(model.X,model.Y,settings,options,settings.indicesOffsetTest,settings.XTestFileID);
+    area=max(area,1-area);
+    areaSVM=max(areaSVM,1-areaSVM);
 
     if point<=length(settings.reportPoints)
         results.selectedDataPoints{point}=model.X;
@@ -94,6 +91,7 @@ while 1
         results.selectedAUCs{point}=current_area;
         results.percentageRemoved{point}=newModel.percentageRemoved;
         results.AUCs{point}=area;
+        results.AUCSVM{point}=areaSVM;
         results.trainAUCs{point}=areaTrain;
         results.selectedBetas{point}=oldModel.betas;
         results.realBetas{point}=newModel.betas;

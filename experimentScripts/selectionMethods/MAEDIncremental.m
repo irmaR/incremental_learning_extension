@@ -27,7 +27,7 @@ current_area=inferenceType(model.K,model.X,model.Y,settings.XTest,settings.YTest
 aucTrain=inferenceType(model.K,model.X,model.Y,model.X,model.Y,settings);
 current_area=max(current_area,1-current_area);
 aucTrain=max(aucTrain,1-aucTrain);
-[areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings.XTest,settings.YTest,settings)
+[areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(model,settings.XTest,settings.YTest,settings);
 results.selectedKernels{point}=model.K;
 results.selectedDistances{point}=model.D;
 results.selectedDataPoints{point}=model.X;
@@ -67,14 +67,9 @@ for j=0:settings.batchSize:(size(trainFea,1)-settings.numSelectSamples-settings.
     %areaSelection=srdaInference(newModel.K,newModel.X,newModel.Y,settings.validation,settings.validationClass,options); 
     [areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]=run_all_inferences(newModel,settings.validation,settings.validationClass,settings);
     areaSelection=nanmean([areaSRKDA,areaSRDA,areaDT,areaRidge,areaSVM]);
+    %areaSelection=areaSRKDA; % CHANGE THIS: but SRKDA seems to perform bad. Seeing if this is a problem.
     areaTrain=-1;
     areaSelection=max(areaSelection,1-areaSelection);
-    if areaSelection<current_area
-        model=oldModel;
-    else
-        current_area=areaSelection;
-        model=newModel;
-    end
     if areaSelection<current_area
         model=oldModel;
     else

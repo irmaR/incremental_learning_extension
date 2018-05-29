@@ -21,9 +21,13 @@ point=1;
 [model,values] = MAED(model,settings.numSelectSamples,options);
 %save current point
 %current_area=inferenceType(model.X,model.Y,settings,settings,options)
-current_area=SRDASequential(model.X,model.Y,settings,options,settings.indicesOffsetTest,settings.XTestFileID);
-aucTrain=-1;
+area1=SRDASequential(model.X,model.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
+area2=SVMSelectionSequential(model.X,model.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
+current_area=nanmean([area1,area2]);
 current_area=max(current_area,1-current_area);
+%current_area=SRDASequential(model.X,model.Y,settings,options,settings.indicesOffsetTest,settings.XTestFileID);
+aucTrain=-1;
+%current_area=max(current_area,1-current_area);
 aucTrain=max(aucTrain,1-aucTrain);
 results.selectedKernels{point}=model.K;
 results.selectedDistances{point}=model.D;
@@ -50,17 +54,18 @@ while 1
     oldModel=model;
     fprintf('Slice %d - %d\n',pointerObs+1,pointerObs+batch)
     %[XObserved,YObserved]=getDataInstancesSequential(settings.XTrainFileID,settings.formattingString,settings.delimiter,indices);
-    [XObserved,YObserved]=getDataInstancesSequential(settings.XTrainFileID,settings.formattingString,settings.delimiter,settings.indicesOffsetTrain(1:pointerObs+batch));
-    newModel.X=XObserved;
-    newModel.Y=YObserved;
+    [XNew,YNew]=getDataInstancesSequential(settings.XTrainFileID,settings.formattingString,settings.delimiter,settings.indicesOffsetTrain(pointerObs+1:pointerObs+batch));
+    %[XObserved,YObserved]=getDataInstancesSequential(settings.XTrainFileID,settings.formattingString,settings.delimiter,settings.indicesOffsetTrain(1:pointerObs+batch));
+    newModel.X=[model.X;XNew];
+    newModel.Y=[model.Y;YNew];
     %balanced
     classes=unique(newModel.Y);
     %determine how many samples to select from each class
     nr_samples1=ceil(settings.numSelectSamples/2);
     nr_samples2=settings.numSelectSamples-nr_samples1;
-    ix=randperm(size(XObserved,1));
-    model.X=XObserved(ix,:);
-    model.Y=YObserved(ix,:);
+    ix=randperm(size(newModel.X,1));
+    model.X=newModel.X(ix,:);
+    model.Y=newModel.Y(ix,:);
     starting_count=tic;
     try
         ix_up_class1=find(model.Y==classes(1));
@@ -89,26 +94,24 @@ while 1
     %[newModel,values]=MAED(newModel,settings.numSelectSamples,options);
     %keep the new model if it improves the auc
     %area=inferenceType(model.K,model.X,model.Y,settings,settings,options);
-    areaSelection=SRDASequential(newModel.X,newModel.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
-
-    areaTrain=-1;
+    area1=SRDASequential(newModel.X,newModel.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
+    area2=SVMSelectionSequential(newModel.X,newModel.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
+    areaSelection=nanmean([area1,area2]);
     areaSelection=max(areaSelection,1-areaSelection);
+    fprintf('Area selection %f, current area %f\n',areaSelection,current_area);
+    areaTrain=-1;
     if areaSelection<current_area
-        model=oldModel;
+       model=oldModel;
     else
-        current_area=areaSelection;
-        model=newModel;
-    end
-    if areaSelection<current_area
-        model=oldModel;
-    else
-        current_area=areaSelection;
-        model=newModel;
+       current_area=areaSelection;
+       model=newModel;
     end
     %get the test AUC given the current model
     area=SRDASequential(model.X,model.Y,settings,options,settings.indicesOffsetTest,settings.XTestFileID);
-    area=max(area,1-area);
-   
+    areaSVM=SVMsequential(model.X,model.Y,settings,options);
+    area=max(area,1-area)
+    areaSVM=max(areaSVM,1-areaSVM)
+    
     if point<=length(settings.reportPoints)
         results.selectedDataPoints{point}=model.X;
         results.selectedLabels{point}=model.Y;
@@ -117,8 +120,8 @@ while 1
         results.processingTimes(point)=toc(starting_count1);
         results.selectedAUCs{point}=current_area;
         results.percentageRemoved{point}=-1;
-        area
         results.AUCs{point}=area;
+        results.AUCSVM{point}=areaSVM;
         results.trainAUCs{point}=areaTrain;
         results.selectedBetas{point}=[];
         results.realBetas{point}=[];
