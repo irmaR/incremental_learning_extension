@@ -1,4 +1,4 @@
-function [output_path]=highMassPhysicsExperimenttraining(method,run,shuffleSeedValidation,validationOffset,fidTrain,fidTest,fidIndicesTrain,fidIndicesTest,pathToResults,pathToCode,numSelectSamples,batchSize,dataLimit,warping,balanced,betas,alphas,kernels)
+function [output_path]=highMassPhysicsExperimenttraining(method,run,shuffleSeedValidation,validationOffset,fidTrain,fidTest,fidIndicesTrain,fidIndicesTest,pathToResults,numSelectSamples,batchSize,dataLimit,warping,balanced,betas,alphas,kernels)
 NeighborModes='Supervised';
 WeightModes='HeatKernel'
 ks=0;
@@ -73,6 +73,7 @@ settings.delimiter=',';
 
 size(fidIndicesValidation)
 settings.indicesOffsetValidation=fidIndicesValidation;
+
 settings.indicesOffsetTest=fidIndicesTest;
 settings.XTestFileID=fidTest;
 settings.read_size_test=400;
@@ -86,9 +87,12 @@ settings.dataLimit=dataLimit;
 settings.run=1;
 settings.warping=warping;
 settings.balanced=balanced;
+settings.bLDA=balanced;
 settings.weightMode=WeightModes;
 settings.neighbourMode=NeighborModes;
 settings.ks=ks;
+settings.t=0.5;
+settings.classes=[1,2];
 settings.positiveClass=1;
 settings.outputPath=output_path;
 

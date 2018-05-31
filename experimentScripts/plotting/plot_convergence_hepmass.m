@@ -1,5 +1,5 @@
-pathiSRKDA1='/home/irma/work/RESULTS/Incremental_Journal_Experiments_May/Hepmass_reduced/smp_20/bs_100/iSRKDA/run/results.mat'
-pathRandom='/home/irma/work/RESULTS/Incremental_Journal_Experiments_May/Hepmass_reduced/smp_20/bs_100/random/run1/results.mat'
+pathiSRKDA1='/home/irma/work/RESULTS/Incremental_Journal_Experiments_May/Hepmass_reduced/smp_100/bs_1000/iSRKDA/results.mat'
+pathRandom='/home/irma/work/RESULTS/Incremental_Journal_Experiments_May/Hepmass_reduced/smp_100/bs_1000/random/results.mat'
 
 isrkda=load(pathiSRKDA1);
 random=load(pathRandom);

@@ -1,5 +1,4 @@
-function [results]=MAEDIncrementalSequential(settings,options,inferenceType)
-%function [res]=MAEDIncrementalSequential(trainFileID,trainOffsetIndices,formatting,delimiter,selectNum,batch,observationPoints,balanced,options,inferenceType)
+function [results]=MAEDIncrementalSequential(settings,inferenceType)
 starting_count=tic;
 nrObsPoints=length(settings.reportPoints);
 results.selectedDataPoints=cell(1, nrObsPoints);
@@ -16,15 +15,13 @@ results.realBetas=cell(1, nrObsPoints);
 results.percentageRemoved=cell(1,nrObsPoints);
 
 %get first selectNum points from the file
-size(settings.indicesOffsetTrain)
-settings.numSelectSamples
 indices=settings.indicesOffsetTrain(1:settings.numSelectSamples);
 [model.X,model.Y]=getDataInstancesSequential(settings.XTrainFileID,settings.formattingString,settings.delimiter,indices);
 point=1;
-[model,values] = MAED(model,settings.numSelectSamples,options);
+[model,values] = MAED(model,settings.numSelectSamples,settings);
 %save current point
-area1=SRDASequential(model.X,model.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
-area2=SVMSelectionSequential(model.X,model.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
+area1=SRDASequential(model.X,model.Y,settings,settings,settings.indicesOffsetValidation,settings.XTrainFileID);
+area2=SVMSelectionSequential(model.X,model.Y,settings,settings,settings.indicesOffsetValidation,settings.XTrainFileID);
 current_area=nanmean([area1,area2]);
 current_area=max(current_area,1-current_area);
 aucTrain=-1;
@@ -51,15 +48,15 @@ while 1
     %if pointerObs>=size(settings.indicesOffsetTrain,1)
     %    break
     %end
-    %fprintf('BATCH size: %d\n',batch);
     fprintf('Slice %d - %d\n',pointerObs+1,pointerObs+batch)
+    settings.indicesOffsetTrain(pointerObs+1:pointerObs+batch);
     [XNew,YNew]=getDataInstancesSequential(settings.XTrainFileID,settings.formattingString,settings.delimiter,settings.indicesOffsetTrain(pointerObs+1:pointerObs+batch));
     %fprintf('Size of new block %d\t, Reached %d\n',size(XNew,1),pointerObs);
     oldModel=model;
     if settings.balanced
-        newModel=incrementalUpdateModelBalanced(model,options,XNew,YNew,settings.numSelectSamples);
+        newModel=incrementalUpdateModelBalanced(model,settings,XNew,YNew,settings.numSelectSamples);
     else
-        newModel = MAEDRankIncremental(model,XNew,YNew,settings.numSelectSamples,options);
+        newModel = MAEDRankIncremental(model,XNew,YNew,settings.numSelectSamples,settings);
     end
     %keep the new model if it improves the auc
     %sprintf('Running inference on model')
@@ -67,8 +64,8 @@ while 1
     %improves the performance
     time1=toc(starting_count);
     %areaSelection=log_reg_validation(newModel.K,newModel.X,newModel.Y,settings,settings,options);
-    area1=SRDASequential(newModel.X,newModel.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
-    area2=SVMSelectionSequential(newModel.X,newModel.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
+    area1=SRDASequential(newModel.X,newModel.Y,settings,settings,settings.indicesOffsetValidation,settings.XTrainFileID);
+    area2=SVMSelectionSequential(newModel.X,newModel.Y,settings,settings,settings.indicesOffsetValidation,settings.XTrainFileID);
     areaSelection=nanmean([area1,area2]);
     areaSelection=max(areaSelection,1-areaSelection);
     fprintf('Area selection %f, current area %f\n',areaSelection,current_area);
@@ -81,8 +78,8 @@ while 1
         model=newModel;
     end
     %get the test AUC given the current model
-    area=SRDASequential(model.X,model.Y,settings,options,settings.indicesOffsetTest,settings.XTestFileID);
-    areaSVM=SVMsequential(model.X,model.Y,settings,options);
+    area=SRDASequential(model.X,model.Y,settings,settings,settings.indicesOffsetTest,settings.XTestFileID);
+    areaSVM=SVMsequential(model.X,model.Y,settings,settings);
     area=max(area,1-area)
     areaSVM=max(areaSVM,1-areaSVM)
 
@@ -121,7 +118,6 @@ while 1
     else
         break;
     end
-    
 end
 end
 

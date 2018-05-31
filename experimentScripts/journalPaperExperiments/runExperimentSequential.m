@@ -3,7 +3,7 @@ switch lower(method)
    case {lower('iSRDA')}
         results=iSRKDA(settings,@srdaInference);
     case {lower('iSRKDA')}
-        results=iSRKDASequential(settings,@log_reg);    
+        results=iSRKDASequential(settings,@lssvmInference);    
     case {lower('SRDA')}
         results=bSRDKA(settings,@srdaInference);
     case {lower('SRKDA')}

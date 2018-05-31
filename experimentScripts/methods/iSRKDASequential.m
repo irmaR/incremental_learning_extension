@@ -1,6 +1,15 @@
 function [results]=iSRKDASequential(settings,inferenceType)
 start_tuning=tic;
-[reguAlpha,reguBeta,kernelSigma]=tuneParams(settings,inferenceType);
+settings1=settings;
+settings1.indicesOffsetTrain=settings.indicesOffsetValidation;
+settings1.batchSize=100;
+settings1.read_size_test=100;
+settings1.reportPoints=[settings1.numSelectSamples:200:size(settings1.indicesOffsetTrain,1)];
+[settings1.XTrain,settings1.YTrain]=getDataInstancesSequential(settings1.XTrainFileID,settings1.formattingString,settings1.delimiter,settings1.indicesOffsetValidation);
+fprintf('Validation size %d\n',size(settings1.XTrain,1))
+fprintf('Train size settings %d\n',size(settings.indicesOffsetTrain,1))
+fprintf('Train size settings1 %d\n',size(settings1.indicesOffsetTrain,1))
+[reguAlpha,reguBeta,kernelSigma]=tuneParams(settings1,@MAEDIncrementalSequential,inferenceType);
 tuningTime=toc(start_tuning);
 
 if ~isfield(settings,'XTrainFileID')
@@ -29,24 +38,23 @@ if ~isfield(settings,'initClass')
     settings.initClass=[];
 end
 %Incrementally learn the model
-options = [];
-options.KernelType = 'Gaussian';
-options.t = kernelSigma;
-options.bLDA=settings.balanced;
-options.ReguBeta=reguBeta;
-options.ReguAlpha = reguAlpha;
-options.k=settings.ks;
-options.WeightMode=settings.weightMode;
-options.NeighborMode=settings.neighbourMode;
-%options.test=settings.XTest;
-%options.test_class=settings.YTest;
-%measure time
+settings.KernelType = 'Gaussian';
+settings.t = kernelSigma;
+settings.bLDA=settings.balanced;
+settings.ReguBeta=reguBeta;
+settings.ReguAlpha = reguAlpha;
+settings.k=settings.ks;
+settings.WeightMode=settings.weightMode;
+settings.NeighborMode=settings.neighbourMode;
+options.kernel=kernelSigma;
+options.reguBeta=reguBeta;
+options.reguAlpha=reguAlpha;
 tic;
 fprintf('Running the learning...')
-sprintf('Run %d, Alpha: %f, Sigma: %f',settings.run,options.ReguAlpha,options.t)
+sprintf('Run %d, Alpha: %f, Sigma: %f',settings.run,settings.ReguAlpha,settings.t)
 fprintf('Init sample size %d-%d',size(settings.initSample,1),size(settings.initSample,2))
 best_options=options;
-[results]=MAEDIncrementalSequential(settings,options,inferenceType);
+[results]=MAEDIncrementalSequential(settings,inferenceType);
 results.tuningTime=tuningTime;
 results.bestOptions=best_options;
 results.reguAlpha=reguAlpha;

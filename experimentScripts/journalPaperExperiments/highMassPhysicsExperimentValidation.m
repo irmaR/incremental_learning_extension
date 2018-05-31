@@ -29,36 +29,36 @@ fprintf(fileID,'Kernel params: ');
 for i=1:length(kernelParams)
     fprintf(fileID,'%1.3f',kernelParams(i));
 end
-fprintf(fileID,'\n')
-fprintf(fileID,'nr_samples:%d \n',numSelectSamples);
-fprintf(fileID,'batch_size:%d \n',batchSize);
-fprintf(fileID,'data_limit:%d \n',dataLimit);
-fprintf(fileID,'Using warping?:%d \n',warping);
-fprintf(fileID,'Using balancing?:%d \n',balanced);
-fprintf('Batch sizE: %d',batchSize)
-nrTrain=validationOffset;
-batchReport=1000;
 
+nrTest=validationOffset*0.3 %take 30 percent of validation for testinf
+nrTrain=validationOffset - nrTest
+batchReport=200;
+batchSize=200;
 %get Train offset indices
 fidTrain=fopen(fidTrain);
 fidIndicesTrain=load(fidIndicesTrain);
 fidIndicesTrain=fidIndicesTrain.arrayofOffsets;
-
-
 %shuffle the array
 s = RandStream('mt19937ar','Seed',shuffleSeed);
 ix=randperm(s,size(fidIndicesTrain,1))';
-fidIndicesTrain=fidIndicesTrain(ix(1:nrTrain,:),:);
+fidIndicesValidation=fidIndicesTrain(ix(1:nrTrain,:),:);
+fidIndicesTest=fidIndicesTrain(ix(nrTrain:nrTrain+nrTest,:),:);
+
+fprintf('Nr Validation points (training):%d, nr Test points: %d',size(fidIndicesValidation,1),size(fidIndicesTest,1))
 
 reportPoints=[numSelectSamples:batchReport:nrTrain,nrTrain]
 
 settings.initSample=[];
 settings.initClass=[];
 settings.reportPointIndex=1;
-settings.indicesOffsetTrain=fidIndicesTrain;
+settings.indicesOffsetTrain=fidIndicesValidation;
+settings.indicesOffsetValidation=fidIndicesValidation;
+settings.indicesOffsetTest=fidIndicesTest;
+settings.read_size_test=100;
 settings.XTrainFileID=fidTrain;
+settings.XTestFileID=fidTrain;
 settings.XTrain=fidTrain;
-settings.formattingString='%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f';
+settings.formattingString='%s%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f%f';
 settings.delimiter=',';
 settings.reguAlphaParams=reguAlphaParams;
 settings.reguBetaParams=reguBetaParams;
@@ -68,6 +68,8 @@ settings.batchSize=batchSize;
 settings.reportPoints=reportPoints;
 settings.dataLimit=dataLimit;
 settings.run=1;
+settings.positiveClass=1;
+settings.bLDA=balanced;
 settings.warping=warping;
 settings.balanced=balanced;
 settings.weightMode=WeightModes;

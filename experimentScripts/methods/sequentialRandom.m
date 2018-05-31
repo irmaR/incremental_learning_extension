@@ -1,7 +1,16 @@
 function [results]=sequentialRandom(settings,inferenceType)
 results=[];
 start_tuning=tic;
-[reguAlpha,reguBeta,kernelSigma]=tuneParams(settings,inferenceType);
+settings1=settings;
+settings1.indicesOffsetTrain=settings.indicesOffsetValidation;
+settings1.batchSize=100;
+settings1.read_size_test=100;
+settings1.reportPoints=[settings1.numSelectSamples:200:size(settings1.indicesOffsetTrain,1)];
+[settings1.XTrain,settings1.YTrain]=getDataInstancesSequential(settings1.XTrainFileID,settings1.formattingString,settings1.delimiter,settings1.indicesOffsetValidation);
+fprintf('Validation size %d\n',size(settings1.XTrain,1))
+fprintf('Train size settings %d\n',size(settings.indicesOffsetTrain,1))
+fprintf('Train size settings1 %d\n',size(settings1.indicesOffsetTrain,1))
+[reguAlpha,reguBeta,kernelSigma]=tuneParams(settings1,@MAEDIncrementalSequential,inferenceType);
 tuningTime=toc(start_tuning)
 
 if ~isfield(settings,'XTrainFileID')
