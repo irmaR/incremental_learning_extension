@@ -19,13 +19,12 @@ indices=settings.indicesOffsetTrain(1:settings.numSelectSamples);
 
 point=1;
 [model,values] = MAED(model,settings.numSelectSamples,options);
-%save current point
-%current_area=inferenceType(model.X,model.Y,settings,settings,options)
-area1=SRDASequential(model.X,model.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
-area2=SVMSelectionSequential(model.X,model.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
-current_area=nanmean([area1,area2]);
-current_area=max(current_area,1-current_area);
-%current_area=SRDASequential(model.X,model.Y,settings,options,settings.indicesOffsetTest,settings.XTestFileID);
+modelSRDA=model;
+modelSRKDA=model;
+modelSVM=model;
+current_area1=SRDASequential(modelSRDA.X,modelSRDA.Y,settings,settings,settings.indicesOffsetValidation,settings.XTrainFileID);
+current_area2=SVMSelectionSequential(modelSVM.X,modelSVM.Y,settings,settings,settings.indicesOffsetValidation,settings.XTrainFileID);
+current_area3=SRKDASequential(modelSRKDA.X,modelSRKDA.Y,settings,settings,settings.indicesOffsetValidation,settings.XTrainFileID);
 aucTrain=-1;
 %current_area=max(current_area,1-current_area);
 aucTrain=max(aucTrain,1-aucTrain);
@@ -35,13 +34,10 @@ results.selectedDataPoints{point}=model.X;
 results.selectedLabels{point}=model.Y;
 results.times(point)=toc(starting_count);
 results.reportPointIndex=point;
+results.AUCSRDA{point}=current_area1;
+results.AUCSVM{point}=current_area2;
+results.AUCSSRKDA{point}=current_area3;
 results.processingTimes(point)=toc(starting_count);
-results.selectedAUCs{point}=current_area;
-results.AUCs{point}=current_area;
-results.trainAUCs{point}=aucTrain;
-results.realBetas{point}=values;
-results.selectedBetas{point}=values;
-results.percentageRemoved{point}=0;
 point=point+1;
 pointerObs=settings.numSelectSamples;
 batch=settings.batchSize;
@@ -55,7 +51,9 @@ while 1
     fprintf('Slice %d - %d\n',pointerObs+1,pointerObs+batch)
     %[XObserved,YObserved]=getDataInstancesSequential(settings.XTrainFileID,settings.formattingString,settings.delimiter,indices);
     [XNew,YNew]=getDataInstancesSequential(settings.XTrainFileID,settings.formattingString,settings.delimiter,settings.indicesOffsetTrain(pointerObs+1:pointerObs+batch));
-    %[XObserved,YObserved]=getDataInstancesSequential(settings.XTrainFileID,settings.formattingString,settings.delimiter,settings.indicesOffsetTrain(1:pointerObs+batch));
+    oldModelSRDA=modelSRDA;
+    oldModelSRKDA=modelSRKDA;
+    oldModelSVM=modelSVM;
     newModel.X=[model.X;XNew];
     newModel.Y=[model.Y;YNew];
     %balanced
@@ -64,78 +62,97 @@ while 1
     nr_samples1=ceil(settings.numSelectSamples/2);
     nr_samples2=settings.numSelectSamples-nr_samples1;
     ix=randperm(size(newModel.X,1));
-    model.X=newModel.X(ix,:);
-    model.Y=newModel.Y(ix,:);
-    starting_count=tic;
-    try
-        ix_up_class1=find(model.Y==classes(1));
-    catch
-        ix_up_class1=[];
-    end
-    try
-        ix_up_class2=find(model.Y==classes(2));
-    catch
-        ix_up_class2=[];
-    end
-    if nr_samples1>size(ix_up_class1,1)
-        nr_samples1=size(ix_up_class1,1);
-        nr_samples2=settings.numSelectSamples-nr_samples1;
+    newModel.X=newModel.X(ix(1:settings.numSelectSamples),:);
+    newModel.Y=newModel.Y(ix(1:settings.numSelectSamples),:);
+%     starting_count=tic;
+%     try
+%         ix_up_class1=find(model.Y==classes(1));
+%     catch
+%         ix_up_class1=[];
+%     end
+%     try
+%         ix_up_class2=find(model.Y==classes(2));
+%     catch
+%         ix_up_class2=[];
+%     end
+%     if nr_samples1>size(ix_up_class1,1)
+%         nr_samples1=size(ix_up_class1,1);
+%         nr_samples2=settings.numSelectSamples-nr_samples1;
+%     end
+%     
+%     if nr_samples2>size(ix_up_class2,1)
+%         nr_samples2=size(ix_up_class2,1);
+%         nr_samples1=settings.numSelectSamples-nr_samples2;
+%     end
+%     current_sample=[model.X(ix_up_class1(1:nr_samples1),:);model.X(ix_up_class2(1:nr_samples2),:)];
+%     current_labels=[model.Y(ix_up_class1(1:nr_samples1),:);model.Y(ix_up_class2(1:nr_samples2),:)];
+%     newModel.X=current_sample;
+%     newModel.Y=current_labels;
+
+    
+    time1=toc(starting_count);
+    area1=SRDASequential(newModel.X,newModel.Y,settings,settings,settings.indicesOffsetValidation,settings.XTrainFileID);
+    area2=SVMSelectionSequential(newModel.X,newModel.Y,settings,settings,settings.indicesOffsetValidation,settings.XTrainFileID);
+    area3=SRKDASequential(newModel.X,newModel.Y,settings,settings,settings.indicesOffsetValidation,settings.XTrainFileID);
+    fprintf('Area selection: SRDA=%0.2f, SRKDA=%0.2f, SVM=%0.2f\n',area1,area3,area2);
+    area1=max(area1,1-area1);
+    area2=max(area2,1-area2);
+    area3=max(area3,1-area3);
+   
+    fprintf('SRDA: current area: %0.3f, new area: %0.3f\n',current_area1,area1);
+    fprintf('SRKDA: current area: %0.3f, new area: %0.3f\n',current_area3,area3);
+    fprintf('SVM: current area: %0.3f, new area: %0.3f\n',current_area2,area2);
+    %choose preferred model SRDA
+    if area1<current_area1
+        modelSRDA=oldModelSRDA;
+    else
+        current_area1=area1;
+        modelSRDA=newModel;
     end
     
-    if nr_samples2>size(ix_up_class2,1)
-        nr_samples2=size(ix_up_class2,1);
-        nr_samples1=settings.numSelectSamples-nr_samples2;
-    end
-    current_sample=[model.X(ix_up_class1(1:nr_samples1),:);model.X(ix_up_class2(1:nr_samples2),:)];
-    current_labels=[model.Y(ix_up_class1(1:nr_samples1),:);model.Y(ix_up_class2(1:nr_samples2),:)];
-    newModel.X=current_sample;
-    newModel.Y=current_labels;
-    %[a,~]=hist(newModel.Y,unique(newModel.Y));
-    %[newModel,values]=MAED(newModel,settings.numSelectSamples,options);
-    %keep the new model if it improves the auc
-    %area=inferenceType(model.K,model.X,model.Y,settings,settings,options);
-    area1=SRDASequential(newModel.X,newModel.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
-    area2=SVMSelectionSequential(newModel.X,newModel.Y,settings,options,settings.indicesOffsetValidation,settings.XTrainFileID);
-    areaSelection=nanmean([area1,area2]);
-    areaSelection=max(areaSelection,1-areaSelection);
-    fprintf('Area selection %f, current area %f\n',areaSelection,current_area);
-    areaTrain=-1;
-    if areaSelection<current_area
-       model=oldModel;
+    %choose preferred model SVM
+    if area2<current_area2
+        modelSVM=oldModelSVM;
     else
-       current_area=areaSelection;
-       model=newModel;
+        current_area2=area2;
+        modelSVM=newModel;
     end
-    %get the test AUC given the current model
-    area=SRDASequential(model.X,model.Y,settings,options,settings.indicesOffsetTest,settings.XTestFileID);
-    areaSVM=SVMsequential(model.X,model.Y,settings,options);
-    area=max(area,1-area)
+    
+    %choose preferred model SRKDA
+    if area3<current_area3
+        modelSRKDA=oldModelSRKDA;
+        fprintf('Keeping the old model\n');
+    else
+        current_area3=area3;
+        modelSRKDA=newModel;
+    end
+    
+   %get the test AUC given the current model
+    areaSRDA=SRDASequential(modelSRDA.X,modelSRDA.Y,settings,settings,settings.indicesOffsetTest,settings.XTestFileID);
+    areaSRKDA=SRKDASequential(modelSRKDA.X,modelSRKDA.Y,settings,settings,settings.indicesOffsetTest,settings.XTestFileID);
+    areaSVM=SVMsequential(modelSVM.X,modelSVM.Y,settings,settings);
+    areaSRDA=max(areaSRDA,1-areaSRDA)
+    areaSRKDA=max(areaSRKDA,1-areaSRKDA)
     areaSVM=max(areaSVM,1-areaSVM)
     
     if point<=length(settings.reportPoints)
         results.selectedDataPoints{point}=model.X;
         results.selectedLabels{point}=model.Y;
-        results.selectedKernels{point}=[];
-        results.times(point)=toc(starting_count);
-        results.processingTimes(point)=toc(starting_count1);
-        results.selectedAUCs{point}=current_area;
-        results.percentageRemoved{point}=-1;
-        results.AUCs{point}=area;
+        results.selectedKernels{point}=model.K;
+        results.times(point)=time1;
+        results.processingTimes(point)=toc(starting_count1);        
+        results.AUCSRDA{point}=areaSRDA;
         results.AUCSVM{point}=areaSVM;
-        results.trainAUCs{point}=areaTrain;
-        results.selectedBetas{point}=[];
-        results.realBetas{point}=[];
+        results.AUCSSRKDA{point}=areaSRKDA;
         results.reportPointIndex=point;
         results.pointerObserved=pointerObs;
         results.TrainingIndices=settings.indicesOffsetTrain;
         results.processingTimes=results.processingTimes;
         results.selectionTimes=results.times;
-        results.selectedBetas=results.selectedBetas;
-        results.realBetas=results.realBetas;
-        results.percentageRemoved=results.percentageRemoved;
         results.reportPoints=settings.reportPoints;
         results.reportPointIndex=results.reportPointIndex;
         save(sprintf('%s/results.mat',settings.outputPath),'results');
+        %fprintf('Reported at point %d',point)
         pointerObs=pointerObs+batch;
     end
     if point+1<=length(settings.reportPoints)

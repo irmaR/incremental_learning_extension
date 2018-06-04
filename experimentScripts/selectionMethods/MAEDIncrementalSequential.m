@@ -20,13 +20,12 @@ indices=settings.indicesOffsetTrain(1:settings.numSelectSamples);
 point=1;
 [model,values] = MAED(model,settings.numSelectSamples,settings);
 %save current point
-area1=SRDASequential(model.X,model.Y,settings,settings,settings.indicesOffsetValidation,settings.XTrainFileID);
-area2=SVMSelectionSequential(model.X,model.Y,settings,settings,settings.indicesOffsetValidation,settings.XTrainFileID);
-current_area=nanmean([area1,area2]);
-current_area=max(current_area,1-current_area);
-aucTrain=-1;
-current_area=max(current_area,1-current_area);
-aucTrain=max(aucTrain,1-aucTrain);
+modelSRDA=model;
+modelSRKDA=model;
+modelSVM=model;
+current_area1=SRDASequential(modelSRDA.X,modelSRDA.Y,settings,settings,settings.indicesOffsetValidation,settings.XTrainFileID);
+current_area2=SVMSelectionSequential(modelSVM.X,modelSVM.Y,settings,settings,settings.indicesOffsetValidation,settings.XTrainFileID);
+current_area3=SRKDASequential(modelSRKDA.X,modelSRKDA.Y,settings,settings,settings.indicesOffsetValidation,settings.XTrainFileID);
 results.selectedKernels{point}=model.K;
 results.selectedDistances{point}=model.D;
 results.selectedDataPoints{point}=model.X;
@@ -34,12 +33,9 @@ results.selectedLabels{point}=model.Y;
 results.times(point)=toc(starting_count);
 results.reportPointIndex=point;
 results.processingTimes(point)=toc(starting_count);
-results.selectedAUCs{point}=current_area;
-results.AUCs{point}=current_area;
-results.trainAUCs{point}=aucTrain;
-results.realBetas{point}=values;
-results.selectedBetas{point}=values;
-results.percentageRemoved{point}=0;
+results.AUCSRDA{point}=current_area1;
+results.AUCSVM{point}=current_area2;
+results.AUCSSRKDA{point}=current_area3;
 %point=point+1;
 batch=settings.batchSize;
 pointerObs=settings.numSelectSamples;
@@ -52,35 +48,62 @@ while 1
     settings.indicesOffsetTrain(pointerObs+1:pointerObs+batch);
     [XNew,YNew]=getDataInstancesSequential(settings.XTrainFileID,settings.formattingString,settings.delimiter,settings.indicesOffsetTrain(pointerObs+1:pointerObs+batch));
     %fprintf('Size of new block %d\t, Reached %d\n',size(XNew,1),pointerObs);
-    oldModel=model;
+    oldModelSRDA=modelSRDA;
+    oldModelSRKDA=modelSRKDA;
+    oldModelSVM=modelSVM;
     if settings.balanced
         newModel=incrementalUpdateModelBalanced(model,settings,XNew,YNew,settings.numSelectSamples);
     else
         newModel = MAEDRankIncremental(model,XNew,YNew,settings.numSelectSamples,settings);
     end
-    %keep the new model if it improves the auc
-    %sprintf('Running inference on model')
+    %keep the new model if it improves the au
     %run model selection on the validation data. Pick the model if it
-    %improves the performance
+    %improves the performance for each inference type
     time1=toc(starting_count);
     %areaSelection=log_reg_validation(newModel.K,newModel.X,newModel.Y,settings,settings,options);
     area1=SRDASequential(newModel.X,newModel.Y,settings,settings,settings.indicesOffsetValidation,settings.XTrainFileID);
     area2=SVMSelectionSequential(newModel.X,newModel.Y,settings,settings,settings.indicesOffsetValidation,settings.XTrainFileID);
-    areaSelection=nanmean([area1,area2]);
-    areaSelection=max(areaSelection,1-areaSelection);
-    fprintf('Area selection %f, current area %f\n',areaSelection,current_area);
-    areaTrain=-1;
+    area3=SRKDASequential(newModel.X,newModel.Y,settings,settings,settings.indicesOffsetValidation,settings.XTrainFileID);
+    fprintf('Area selection: SRDA=%0.2f, SRKDA=%0.2f, SVM=%0.2f\n',area1,area3,area2);
+    area1=max(area1,1-area1);
+    area2=max(area2,1-area2);
+    area3=max(area3,1-area3);
     
-    if areaSelection<current_area
-        model=oldModel;
+    fprintf('SRDA: current area: %0.3f, new area: %0.3f\n',current_area1,area1);
+    fprintf('SRKDA: current area: %0.3f, new area: %0.3f\n',current_area3,area3);
+    fprintf('SVM: current area: %0.3f, new area: %0.3f\n',current_area2,area2);
+    %choose preferred model SRDA
+    if area1<current_area1
+        modelSRDA=oldModelSRDA;
     else
-        current_area=areaSelection;
-        model=newModel;
+        current_area1=area1;
+        modelSRDA=newModel;
     end
+    
+    %choose preferred model SVM
+    if area2<current_area2
+        modelSVM=oldModelSVM;
+    else
+        current_area2=area2;
+        modelSVM=newModel;
+    end
+    
+    %choose preferred model SRKDA
+    if area3<current_area3
+        modelSRKDA=oldModelSRKDA;
+        fprintf('Keeping the old model\n');
+    else
+        current_area3=area3;
+        modelSRKDA=newModel;
+    end
+    
+
     %get the test AUC given the current model
-    area=SRDASequential(model.X,model.Y,settings,settings,settings.indicesOffsetTest,settings.XTestFileID);
-    areaSVM=SVMsequential(model.X,model.Y,settings,settings);
-    area=max(area,1-area)
+    areaSRDA=SRDASequential(modelSRDA.X,modelSRDA.Y,settings,settings,settings.indicesOffsetTest,settings.XTestFileID);
+    areaSRKDA=SRKDASequential(modelSRKDA.X,modelSRKDA.Y,settings,settings,settings.indicesOffsetTest,settings.XTestFileID);
+    areaSVM=SVMsequential(modelSVM.X,modelSVM.Y,settings,settings);
+    areaSRDA=max(areaSRDA,1-areaSRDA)
+    areaSRKDA=max(areaSRKDA,1-areaSRKDA)
     areaSVM=max(areaSVM,1-areaSVM)
 
     if point<=length(settings.reportPoints)
@@ -88,22 +111,15 @@ while 1
         results.selectedLabels{point}=model.Y;
         results.selectedKernels{point}=model.K;
         results.times(point)=time1;
-        results.processingTimes(point)=toc(starting_count1);
-        results.selectedAUCs{point}=current_area;
-        results.percentageRemoved{point}=newModel.percentageRemoved;
-        results.AUCs{point}=area;
+        results.processingTimes(point)=toc(starting_count1);        
+        results.AUCSRDA{point}=areaSRDA;
         results.AUCSVM{point}=areaSVM;
-        results.trainAUCs{point}=areaTrain;
-        results.selectedBetas{point}=oldModel.betas;
-        results.realBetas{point}=newModel.betas;
+        results.AUCSSRKDA{point}=areaSRKDA;
         results.reportPointIndex=point;
         results.pointerObserved=pointerObs;
         results.TrainingIndices=settings.indicesOffsetTrain;
         results.processingTimes=results.processingTimes;
         results.selectionTimes=results.times;
-        results.selectedBetas=results.selectedBetas;
-        results.realBetas=results.realBetas;
-        results.percentageRemoved=results.percentageRemoved;
         results.reportPoints=settings.reportPoints;
         results.reportPointIndex=results.reportPointIndex;
         save(sprintf('%s/results.mat',settings.outputPath),'results');

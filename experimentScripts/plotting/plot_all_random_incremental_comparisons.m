@@ -1,8 +1,8 @@
 function []=plot_all_random_incremental_comparisons()
 samples1=[20,40,60,80,100]
-[random1,incr12,incr13,incr14]=plot_function_samples_1('/home/irma/work/RESULTS/Incremental/UCI/',100,20,samples1,'iSRKDA');
-[random3,incr32,incr33,incr34]=plot_function_samples_1('/home/irma/work/RESULTS/Incremental/RCV/',100,40,samples1,'iSRKDA');
-[random2,incr22,incr23,incr24]=plot_function_samples_1('/home/irma/work/RESULTS/Incremental/USPS/',100,60,samples1,'iSRKDA')
+[random1,incr12,incr13,incr14]=plot_function_samples_1('/home/irma/work/RESULTS/Incremental_Journal_Experiments_May/UCI/',100,20,samples1,'iSRKDA');
+[random3,incr32,incr33,incr34]=plot_function_samples_1('/home/irma/work/RESULTS/Incremental_Journal_Experiments_May/RCV/',100,40,samples1,'iSRKDA');
+[random2,incr22,incr23,incr24]=plot_function_samples_1('/home/irma/work/RESULTS/Incremental_Journal_Experiments_May/USPS/',100,60,samples1,'iSRKDA')
 fig=figure(1)
 
 subplot(1,3,1)
@@ -40,23 +40,23 @@ ylim([0.5 1])
 b = get(gca,'Children');
 hold off
 
-subplot(1,3,3)
-hold on
-plot(samples1,random3,'g+-','LineWidth',5);hold on;
-plot(samples1,incr32,'kd','LineWidth',5)
-plot(samples1,incr33,'cs','LineWidth',5)
-plot(samples1,incr34,'mo','LineWidth',5)
-set(gca,'FontSize',25)
-set(gca,'LooseInset',get(gca,'TightInset'))
-xlim([samples1(1) samples1(length(samples1))]);
-ylim([0.5 1])
-title('RCV')
-xlabel('#selected samples','FontSize',25)
-b = get(gca,'Children');
-hold off;
+% subplot(1,3,3)
+% hold on
+% plot(samples1,random3,'g+-','LineWidth',5);hold on;
+% plot(samples1,incr32,'kd','LineWidth',5)
+% plot(samples1,incr33,'cs','LineWidth',5)
+% plot(samples1,incr34,'mo','LineWidth',5)
+% set(gca,'FontSize',25)
+% set(gca,'LooseInset',get(gca,'TightInset'))
+% xlim([samples1(1) samples1(length(samples1))]);
+% ylim([0.5 1])
+% title('RCV')
+% xlabel('#selected samples','FontSize',25)
+% b = get(gca,'Children');
+% hold off;
 
 h=[b];
-lgd = legend(h,'i-SRKDA @T3','i-SRKDA @T2','i-SRKDA @T1','random')
+lgd = legend(h,'o-MAED @T3','o-MAED @T2','o-MAED @T1','random')
 lgd.FontSize = 30;
 lgd.Location = 'southeast';
 
@@ -66,16 +66,17 @@ end
 function [random_points,incr_bal_point1,incr_bal_point3,incr_bal_point4]=plot_function_samples_1(path_to_results,bs,division,samples,incremental)
 for i=1:length(samples)
     %path_to_incr=sprintf('%s/smp_%d/bs_%d/Supervised/HeatKernel/k_0/incr_bal/auc.mat',path_to_results,samples(i),bs);
-    path_to_incr=sprintf('%s/smp_%d/bs_%d/Supervised/HeatKernel/k_0/%s/auc.mat',path_to_results,samples(i),bs,incremental);
-    path_to_random=sprintf('%s/smp_%d/bs_%d/Supervised/HeatKernel/k_0/random/auc.mat',path_to_results,samples(i),bs);
+    path_to_incr=sprintf('%s/smp_%d/bs_%d/Supervised/HeatKernel/k_0/%s/auc.mat',path_to_results,samples(i),bs,incremental)
+    path_to_random=sprintf('%s/smp_%d/bs_%d/Supervised/HeatKernel/k_0/random/auc.mat',path_to_results,samples(i),bs)
     
     if exist(path_to_incr, 'file') == 2
         %avg_auc_inct=load(path_to_incr,'avgAucs').avgAucs;
         %std_auc_inct=load(path_to_incr,'stdev');
-        avg_auc_inct=load(path_to_incr,'realAvgAUCs');
-        std_auc_inct=load(path_to_incr,'stdevReal');
-        avg_aucs_inct{i}=avg_auc_inct.realAvgAUCs;
-        std_aucs_inct{i}=std_auc_inct.stdevReal;
+        SRKDAAucs=load(path_to_incr)
+        SRKDAAucs=load(path_to_incr,'SVMAucs')
+        stdevSRKDAAucs=load(path_to_incr,'stdevSRKDAAucs');
+        avg_aucs_inct{i}=SRKDAAucs.SVMAucs;
+        std_aucs_inct{i}=stdevSRKDAAucs.stdevSRKDAAucs;
         report_points=load(path_to_incr,'reportPoints')
         nr_report_points=length(report_points.reportPoints)
     else
@@ -86,10 +87,10 @@ for i=1:length(samples)
     if exist(path_to_random, 'file') == 2
         %avg_auc_rnd=load(path_to_random,'avgAucs').avgAucs;
         %std_auc_rnd=load(path_to_random,'stdev');
-        avg_auc_rnd=load(path_to_random,'realAvgAUCs');
-        std_auc_rnd=load(path_to_random,'stdevReal');
-        avg_aucs_rnd{i}=avg_auc_rnd.realAvgAUCs;
-        std_aucs_rnd{i}=std_auc_rnd.stdevReal;
+        avg_auc_rnd=load(path_to_random,'SVMAucs');
+        std_auc_rnd=load(path_to_random,'stdevSRKDAAucs');
+        avg_aucs_rnd{i}=avg_auc_rnd.SVMAucs
+        std_aucs_rnd{i}=std_auc_rnd.stdevSRKDAAucs;
         report_points=load(path_to_incr,'reportPoints');
         nr_report_points=length(report_points.reportPoints)
     else
@@ -97,6 +98,8 @@ for i=1:length(samples)
         std_aucs_rnd{i}=NaN;
     end
 end
+avg_aucs_inct
+avg_aucs_rnd
 random_points=[];
 incr_bal_point1=[];
 incr_bal_point2=[];
